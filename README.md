@@ -8,7 +8,7 @@ Currently working for most relative svg-path commands - though Arcs may not be i
 TODO:
 * Tidy code
   * Separate js from html
-  * Pollute Global with only one var
+  * ~~Pollute Global with only one var~~
 * Calculate excat svg offset from origin
 * Make a Shape for each z/Z command in the svg-path
 * Add an option to scale the converted svg-path
