@@ -6,6 +6,8 @@ Converts a SVG path to an openstrat Shape
 Currently working for most relative svg-path commands - though Arcs may not be implemented until openstrat supports them
 
 TODO:
+* tidy code
+* calculate excat svg offset from origin
 * Make a Shape for each z/Z command in the svg-path
 * Add an option to scale the converted svg-path
 * Complete full set of relative commands (s, q, t) (except Arcs) 
