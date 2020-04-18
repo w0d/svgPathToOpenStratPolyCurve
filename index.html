@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<head>
+  <title>SVG Path To OpenStrat Shape</title>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width'>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+  <style>
+    body { margin: 0px; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <h3>Convert SVG path to OpenStrat Shape</h3>
+  <label labelFor="svgWidth">Svg Width</label><input type="text" id="svgWidth" value='900' size="5">
+  <label labelFor="svgHeight"> Height</label><input type="text" id="svgHeight" value='600' size="5">
+  <label labelFor="fillColor"> FillColor name | hex</label><input type="text" id="fillColor" value='0xFF123456' size="20">
+  <br>
+  <label for="source">Source: d=</label>
+  <textarea id='source' rows='20' cols="80">m 74.016197,206.10902 c -1.131281,-0.36019 -3.719346,-0.31304 -5.157301,0.094 -0.462894,0.13101 -0.483208,0.0963 -0.166796,-0.28494 0.817835,-0.98544 -1.014285,-5.18714 -3.312366,-7.59644 -1.258994,-1.31993 -1.58704,-1.52103 -2.682526,-1.64451 -0.686464,-0.0774 -1.350587,-0.0773 -1.475827,5e-5 -0.125244,0.0774 -1.195422,0.19611 -2.378179,0.26379 -1.182756,0.0677 -2.352516,0.23119 -2.599467,0.36336 -0.246949,0.13216 -0.724718,0.24294 -1.061707,0.24618 -0.33699,0.003 -0.910363,0.23483 -1.274165,0.51465 -0.511215,0.3932 -0.916874,0.47385 -1.785937,0.35503 -0.927325,-0.12678 -1.12448,-0.0779 -1.12448,0.2791 0,0.61307 -0.807624,0.54319 -2.441535,-0.21126 -1.411759,-0.65186 -3.169097,-1.26878 -5.09909,-1.79004 -0.582083,-0.15721 -1.314876,-0.51738 -1.628426,-0.80036 -0.932468,-0.84158 -4.115224,-2.338 -5.213295,-2.45111 -0.561488,-0.0578 -1.22364,-0.28865 -1.471449,-0.51291 -0.342114,-0.30961 -0.650305,-0.35047 -1.28043,-0.16975 -0.620568,0.17798 -0.908246,0.14356 -1.140635,-0.13645 -0.170922,-0.20595 -0.39544,-0.37445 -0.49893,-0.37445 -0.103489,0 -0.713628,-0.48511 -1.355865,-1.07802 -0.642236,-0.59291 -1.503575,-1.14519 -1.914086,-1.22729 -0.410511,-0.0821 -1.065715,-0.54949 -1.456009,-1.03864 -0.444553,-0.55716 -0.942571,-0.88937 -1.333245,-0.88938 -0.492354,0 -0.58228,-0.0975 -0.42722,-0.46302 0.284089,-0.66975 0.182054,-1.61657 -0.272378,-2.5275 -0.218116,-0.43722 -0.396574,-1.30541 -0.396574,-1.92931 0,-0.6239 -0.131058,-1.21536 -0.291239,-1.31435 -0.160441,-0.0992 -0.226279,-0.5048 -0.146596,-0.90321 0.17519,-0.87595 -0.440528,-1.85845 -1.164668,-1.85845 -0.28279,0 -0.484398,-0.14883 -0.448018,-0.33073 0.03638,-0.1819 -0.08268,-0.30096 -0.264583,-0.26458 -0.181901,0.0364 -0.33073,-0.0529 -0.33073,-0.19844 0,-0.14552 -0.244318,-0.26458 -0.54293,-0.26458 -0.362064,0 -0.632644,-0.25736 -0.812238,-0.77254 -0.148119,-0.42489 -0.439582,-0.83788 -0.647695,-0.91774 -0.208113,-0.0798 -0.378387,-0.31839 -0.378387,-0.53007 0,-0.21169 -0.312031,-0.75571 -0.693403,-1.20895 -0.644299,-0.7657 -0.663036,-0.85762 -0.264584,-1.2979 0.235852,-0.26061 0.428821,-0.79663 0.428821,-1.19115 0,-0.87432 -0.937833,-2.78327 -1.467163,-2.98639 -0.469243,-0.18007 -0.517651,-0.91139 -0.05419,-0.8187 0.23549,0.0471 0.352565,-0.49733 0.406555,-1.89058 0.06689,-1.72615 -0.0037,-2.07691 -0.599067,-2.97657 -0.37119,-0.5609 -0.792265,-1.01983 -0.935721,-1.01983 -0.143456,0 -0.260829,-0.15614 -0.260829,-0.34698 0,-0.19084 -0.239347,-0.6039 -0.531883,-0.91789 -0.292535,-0.314 -0.511758,-0.66388 -0.487162,-0.7775 0.0246,-0.11362 -0.02356,-0.38518 -0.107019,-0.60346 -0.551146,-1.44152 -0.280409,-4.52775 0.462351,-5.27051 0.341243,-0.34125 0.46893,-0.31241 1.055135,0.2383 0.366801,0.34459 0.666911,0.77836 0.666911,0.96392 0,0.18556 0.748512,0.87151 1.663359,1.52433 0.914848,0.65283 1.896833,1.44494 2.182188,1.76025 2.134615,2.35873 6.372958,1.84478 9.61424,-1.16583 1.14916,-1.06737 2.938763,-3.85206 3.711671,-5.7755 0.340868,-0.84827 0.894787,-1.69674 1.266871,-1.94054 0.363643,-0.23827 0.899323,-0.9716 1.1904,-1.62963 0.386698,-0.8742 0.608058,-1.11759 0.821918,-0.90373 0.414068,0.41407 1.580264,0.36299 2.186805,-0.0958 0.282474,-0.21365 0.820259,-0.39225 1.195075,-0.39688 0.374814,-0.005 0.944806,-0.28871 1.266648,-0.63129 0.406747,-0.43296 0.784297,-0.58481 1.238266,-0.49803 0.359206,0.0687 0.826135,-0.0188 1.037619,-0.19428 0.431163,-0.35783 1.554528,-0.18625 2.778594,0.42439 0.428765,0.2139 1.290769,0.42899 1.915564,0.47798 1.622108,0.1272 2.92553,0.4357 3.38495,0.80117 0.218281,0.17365 0.992188,0.53041 1.719792,0.79281 0.727604,0.26239 1.561042,0.68503 1.852083,0.93919 0.670394,0.58543 2.94975,1.58382 3.615947,1.58382 0.278283,0 1.124762,-0.41672 1.881063,-0.92605 0.756301,-0.50932 1.575038,-0.92604 1.819413,-0.92604 0.514855,0 1.772835,-1.51328 2.529385,-3.04271 0.287935,-0.58208 0.924867,-2.54661 1.415407,-4.36562 0.819338,-3.03827 0.888881,-3.59469 0.854948,-6.84046 -0.03328,-3.18377 -0.09128,-3.59102 -0.586446,-4.1181 -0.467829,-0.49798 -0.549508,-0.92116 -0.549508,-2.84699 v -2.26206 l 1.235467,0.62547 c 0.679505,0.34401 1.453067,0.62547 1.719029,0.62547 0.265959,0 0.96334,0.43345 1.549736,0.96323 0.720186,0.65064 1.385856,0.99741 2.051283,1.06859 2.283291,0.24424 2.621569,0.32392 3.620741,0.85288 0.718447,0.38035 1.533851,0.55489 2.592322,0.55489 1.315254,0 1.636868,-0.10001 2.169321,-0.67453 0.386181,-0.4167 0.691745,-0.56675 0.799399,-0.39256 0.09585,0.15508 0.288364,0.21145 0.427815,0.12527 0.139452,-0.0862 0.756304,0.0848 1.37078,0.37994 1.733577,0.83269 3.255471,1.10057 3.819951,0.67238 0.694264,-0.52665 1.42394,-0.45521 3.075985,0.30112 1.201439,0.55003 1.581148,0.62047 2.035101,0.37753 0.371706,-0.19893 0.794801,-0.2166 1.266929,-0.0529 0.389869,0.13518 0.946975,0.1586 1.238017,0.052 0.291965,-0.10689 0.689769,-0.065 0.887449,0.0934 0.197057,0.15793 1.090026,0.38083 1.984376,0.49532 0.89435,0.1145 2.25688,0.30714 3.02785,0.4281 0.77096,0.12096 1.45487,0.13397 1.5198,0.0289 0.0649,-0.10505 0.56523,-0.0981 1.11179,0.0155 1.15838,0.2407 7.3858,0.14205 8.93123,-0.14148 0.58209,-0.1068 1.29585,-0.31646 1.58615,-0.46593 0.2903,-0.14947 1.24781,-0.30449 2.12781,-0.34447 0.87999,-0.04 2.40037,-0.36324 3.37861,-0.71832 0.97824,-0.35508 1.83737,-0.55055 1.90917,-0.43437 0.0718,0.11618 0.54793,0.096 1.05806,-0.0449 0.51014,-0.14086 1.05022,-0.18027 1.20019,-0.0876 0.14996,0.0927 0.56844,-0.0253 0.92996,-0.26216 0.36151,-0.23687 0.76477,-0.36425 0.89612,-0.28307 0.13136,0.0812 0.30411,0.042 0.3839,-0.0871 0.0798,-0.1291 0.47496,-0.30178 0.87817,-0.38374 0.40322,-0.082 1.16276,-0.54445 1.68788,-1.02777 0.52513,-0.48332 1.29903,-1.05672 1.7198,-1.27423 0.42076,-0.2175 0.88408,-0.52649 1.0296,-0.68663 0.50184,-0.55228 3.17796,-1.41528 4.31221,-1.39062 0.62547,0.0136 1.20326,-0.0413 1.28398,-0.12204 0.0807,-0.0807 0.40241,-0.0529 0.71487,0.0619 0.84586,0.31063 3.92161,-0.0946 5.23671,-0.68996 0.63373,-0.28689 1.86661,-0.73433 2.73973,-0.99432 2.35567,-0.70143 3.04271,-0.97871 3.04271,-1.22801 0,-0.12344 0.42071,-0.20861 0.9349,-0.18928 0.56514,0.0212 1.21919,-0.17402 1.65365,-0.49369 0.39531,-0.29086 1.06653,-0.61534 1.49161,-0.72107 0.42508,-0.10572 1.06621,-0.42297 1.42474,-0.70499 0.35854,-0.28201 0.86481,-0.51276 1.12506,-0.51276 0.26026,0 0.80975,-0.28136 1.22109,-0.62525 0.41135,-0.34389 1.0001,-0.70412 1.30833,-0.80051 0.30823,-0.0964 0.77316,-0.41033 1.03319,-0.69766 0.26003,-0.28732 0.72221,-0.53164 1.02708,-0.54292 0.30487,-0.0113 1.11615,-0.21963 1.80284,-0.46302 0.98711,-0.34985 1.41525,-0.70567 2.0447,-1.69928 0.43789,-0.69123 0.90982,-1.25677 1.04874,-1.25677 0.13892,0 0.32242,-0.22006 0.40778,-0.48902 0.0854,-0.26896 0.45058,-0.62359 0.81158,-0.78808 0.44011,-0.20052 0.65638,-0.51373 0.65638,-0.95057 0,-0.87937 0.36024,-1.04267 1.43933,-0.65247 0.73163,0.26457 0.98721,0.2615 1.32137,-0.0158 0.23248,-0.19294 0.4143,-0.22559 0.4143,-0.0744 0,0.1485 0.49185,0.24433 1.09575,0.2135 0.76137,-0.0389 1.23857,-0.23232 1.56376,-0.63392 0.25741,-0.31789 0.6632,-0.57797 0.90177,-0.57797 0.23856,0 0.78852,-0.18346 1.22213,-0.40769 0.43361,-0.22423 0.90008,-0.33866 1.03659,-0.25428 0.32229,0.19918 2.95991,-1.61112 3.32187,-2.27993 0.15309,-0.28286 0.36071,-0.4319 0.4614,-0.33122 0.30674,0.30674 1.24464,-0.73777 1.24464,-1.38611 0,-0.48637 0.18657,-0.64346 0.92977,-0.78289 0.51137,-0.0959 1.01739,-0.32029 1.12448,-0.49857 0.2868,-0.47746 1.72489,-0.90135 2.53349,-0.74677 0.42224,0.0807 0.70393,0.0163 0.70393,-0.16087 0,-0.16248 0.12426,-0.29542 0.27613,-0.29542 0.15187,0 0.59836,-0.30138 0.99219,-0.66973 0.87309,-0.8166 1.7863,-1.082471 2.28799,-0.66611 0.29015,0.24081 0.55441,0.21768 1.17405,-0.10275 0.43978,-0.227423 1.03307,-0.413497 1.3184,-0.413497 0.28533,0 0.84589,-0.386953 1.24568,-0.859896 0.44866,-0.530741 0.76994,-0.733298 0.83932,-0.529167 0.20172,0.593455 0.99655,0.349468 2.0266,-0.622104 1.00147,-0.944622 2.10954,-1.428416 3.2716,-1.428416 0.57398,0 0.58325,0.03038 0.19168,0.627993 -0.22631,0.345396 -0.48672,1.263316 -0.57869,2.039822 -0.20918,1.766215 -0.96662,2.623855 -2.3173,2.623855 -0.51594,0 -0.93807,0.11906 -0.93807,0.26458 0,0.14552 -0.3426,0.26458 -0.76135,0.26458 -0.41874,0 -0.90957,0.1786 -1.09073,0.39688 -0.18116,0.21828 -0.49339,0.39687 -0.69385,0.39687 -0.20047,0 -0.36448,0.11177 -0.36448,0.24837 0,0.13661 -0.53591,0.32874 -1.19091,0.42696 -0.84594,0.12686 -1.689,0.55566 -2.91042,1.48029 -0.94573,0.71594 -1.71951,1.46357 -1.71951,1.6614 0,0.19784 -0.1619,0.42183 -0.35979,0.49777 -0.19788,0.0759 -0.49725,0.68398 -0.66526,1.35122 -0.16802,0.66724 -0.42249,1.21316 -0.56549,1.21316 -0.14301,0 -0.7119,0.40825 -1.2642,0.90722 -0.5523,0.49897 -1.32334,0.98732 -1.71344,1.08523 -0.39008,0.0979 -1.93284,1.31396 -3.42834,2.70234 -1.55659,1.4451 -3.22814,2.74368 -3.90973,3.03739 -3.13156,1.3494 -7.47248,3.59983 -9.28464,4.81336 -1.10473,0.7398 -2.99238,2.3863 -4.19476,3.65889 -2.11863,2.24233 -2.30996,2.57601 -2.84543,4.96224 -0.0816,0.3638 -0.32176,0.86079 -0.53362,1.10443 -0.53266,0.61256 -3.92771,1.172 -4.89553,0.80669 -1.93735,-0.73127 -4.32287,0.52389 -5.76268,3.03208 -0.50933,0.88725 -1.27886,2.13229 -1.71008,2.76676 -0.67671,0.99568 -0.81097,1.49762 -0.98089,3.66712 -0.16867,2.1536 -0.12356,2.71159 0.31503,3.89655 0.28154,0.76065 0.44513,1.55699 0.36353,1.76964 -0.0824,0.21472 0.10628,0.59976 0.42434,0.86595 0.31499,0.26363 0.81577,0.95557 1.11286,1.53765 0.57507,1.12676 1.34203,1.98438 1.77462,1.98438 0.14477,0 0.37636,0.4098 0.51466,0.91066 0.38596,1.39784 2.09547,3.59455 4.33674,5.5727 1.98762,1.75428 3.37419,3.41776 3.37419,4.04805 0,0.17408 0.19133,0.3165 0.42518,0.3165 0.25576,0 0.36854,0.14762 0.28302,0.37047 -0.0782,0.20375 0.14503,0.75972 0.49603,1.23548 0.49327,0.66859 0.56973,0.9475 0.33673,1.22825 -0.22581,0.27208 -0.2246,0.44009 0.005,0.66952 0.4221,0.4221 0.38364,1.12979 -0.0824,1.51659 -0.31276,0.25957 -0.52198,0.21778 -1.07076,-0.21389 -0.37512,-0.29507 -1.06341,-0.61711 -1.52951,-0.71565 -0.46611,-0.0985 -1.0856,-0.39524 -1.37664,-0.65935 -0.39495,-0.3584 -0.88149,-0.46378 -1.91823,-0.41546 -0.76399,0.0356 -1.38906,-0.0331 -1.38906,-0.15269 0,-0.31181 -1.7888,-0.26931 -1.98438,0.0471 -0.0899,0.14552 -0.35202,0.26458 -0.5824,0.26458 -0.23039,0 -1.20812,0.23505 -2.17276,0.52233 -1.48438,0.44207 -1.79907,0.64208 -2.04806,1.30173 -0.29418,0.77934 -1.98313,1.88011 -2.88471,1.88011 -0.23813,0 -0.94225,-0.44648 -1.56471,-0.99219 -0.67471,-0.5915 -1.97329,-1.30462 -3.21561,-1.76586 -1.84213,-0.68394 -2.4113,-0.77153 -4.9068,-0.75516 -1.55263,0.0102 -3.27904,0.16858 -3.83646,0.35199 -2.44,0.80283 -4.01288,2.49869 -4.23059,4.56137 -0.17376,1.64632 -0.34655,4.14604 -0.36796,5.32328 -0.0147,0.80686 -0.27667,1.36309 -1.18899,2.52434 -0.6436,0.81919 -1.24722,1.87464 -1.34138,2.34544 -0.14722,0.73613 -0.24973,0.82724 -0.73206,0.65066 -0.30847,-0.11293 -1.23824,-0.18915 -2.06616,-0.16937 -1.41226,0.0337 -1.61667,0.12684 -3.30729,1.50654 -0.99109,0.80882 -2.07408,1.71538 -2.40664,2.01457 -0.33255,0.29918 -0.87724,0.54397 -1.21042,0.54397 -0.94775,0 -4.44419,1.27011 -5.04861,1.83394 -0.29956,0.27945 -0.90184,0.59413 -1.3384,0.6993 -0.43657,0.10516 -1.22219,0.52642 -1.74582,0.93611 -0.52364,0.4097 -1.44356,0.82349 -2.04426,0.91955 -0.6007,0.0961 -1.6511,0.45761 -2.33422,0.80345 -1.111172,0.56254 -1.288252,0.58696 -1.680741,0.23176 -0.241292,-0.21836 -0.730266,-0.39702 -1.086609,-0.39702 -0.769252,0 -1.823977,0.67931 -1.823977,1.17476 0,0.19306 -0.26789,0.42281 -0.595312,0.51056 -1.115809,0.29902 -5.161844,0.16775 -7.293618,-0.23664 l -2.126555,-0.4034 -3.52507,1.31885 c -2.669069,0.99859 -3.690374,1.51417 -4.205798,2.12319 -0.374399,0.44239 -0.861963,0.80434 -1.083472,0.80434 -0.468601,0 -1.278509,0.81923 -1.278509,1.29322 0,0.17903 -0.101653,0.26269 -0.225893,0.1859 -0.423669,-0.26184 -0.906399,1.2954 -1.035246,3.33963 l -0.128622,2.04062 1.22282,1.36007 c 0.672552,0.74803 1.156814,1.46686 1.076142,1.5974 -0.201075,0.32534 -1.079873,0.25703 -2.496701,-0.19407 z m 86.687653,-37.80089 c -0.0928,-0.24175 -5.3e-4,-0.39688 0.23628,-0.39688 0.21371,0 0.38857,0.1786 0.38857,0.39688 0,0.21828 -0.10633,0.39687 -0.23628,0.39687 -0.12995,0 -0.3048,-0.17859 -0.38857,-0.39687 z</textarea>
+  <br>
+  <label for="output">Output</label>
+  <textarea id='output' rows='20' cols="80"></textarea>
+  <br>
+  <button type="button" onclick="svgPathToOpenStratShape();">Process source</button>
+  <br>
+  <label labelFor="estimatedSvgOffset">Estimated Svg Offset</label><input type="text" id="estimatedSvgOffset" value='' size='70' disabled>
+  <br>
+  <button type="button" onclick="estimatedRecalculateShape();">Recalculate with estimate</button>
+  <br>
+  <label labelFor="svgOffset">Svg Offset: getCanvasShapeOffset();</label><input type="text" id="svgOffset" value='{"x": 107, "y": 154}'>
+  <br>
+  <button type="button" onclick="recalculateShape();">Recalculate</button>
+<script type='text/javascript'>
+  var data, resultContainer, ptr, value, look, cursorPos, pathStart, currentCommand, estimatedRect;
+
+  function estimatedRecalculateShape(){
+    var svgOffset = document.getElementById("estimatedSvgOffset").value;
+    svgOffset = JSON.parse(svgOffset);
+    svgPathToOpenStratShape(svgOffset);
+  }
+
+  function recalculateShape(){
+    var svgOffset = document.getElementById("svgOffset").value;
+    svgOffset = JSON.parse(svgOffset);
+    svgPathToOpenStratShape(svgOffset);
+  }
+
+  function svgPathToOpenStratShape(offset){
+    data = document.getElementById("source").value;
+    resultContainer = document.getElementById("output");
+    resultContainer.value = "";
+    ptr = 0;
+    value = '';
+    look = '';
+    estimatedRect = {l:100000000, r:-100000000, t:100000000, b:-100000000}; //bit of a fudge going on here
+    cursorPos = offset ? {x:-offset.x, y:offset.y} : {x:0, y:0};
+    pathStart = null;
+    currentCommand = null;
+    emit("Shape(");
+    read();
+    consumeWhiteSpace();
+    while (ptr <= data.length){
+      getCommand();
+    }
+    data = resultContainer.value;  //reusing var data as its no longer required 
+    while (", ".indexOf(data[data.length-1]) != -1) { data = data.slice(0, -1); }
+    resultContainer.value = data;
+    var fillColor = document.getElementById("fillColor").value;
+
+    emit(").fill(Green)");
+    estimatedRect.l = n(estimatedRect.l);
+    estimatedRect.r = n(estimatedRect.r);
+    estimatedRect.t = n(estimatedRect.t);
+    estimatedRect.b = n(estimatedRect.b);
+    console.log(estimatedRect);
+    document.getElementById("estimatedSvgOffset").value = JSON.stringify(
+      {x: estimatedRect.l + (estimatedRect.r-estimatedRect.l)/2,
+       y: estimatedRect.t + (estimatedRect.b-estimatedRect.t)/2});
+    resultContainer.focus();
+    resultContainer.select();
+    document.execCommand('copy');
+  }
+  function getCommand(){
+    //moveTo(M, m), lineTo(L, l), curve(C, c, S, s -- Q, q, T, t), arc(A, a) commands
+    if (isDigit(look) || look == "-") {look = currentCommand; ptr--;}
+    else currentCommand = look;
+    switch (look) {
+      case 'z':
+        getClosePath(); //this should close the shape and prepare for new one?
+        break;
+      case 'c':
+        getBezierCurve();
+        break;
+      case 'm':    //**SHOULDNT REALLY DRAW A LINE - NEEDS REVIEW (its ok if its the first..)
+      case 'l':
+        getMoveOrLineTo();
+        break;
+      case 'v':
+        getVertical();
+        break;
+      case 'h':
+        getHorizontal();
+        break;
+      default: expected("Command expected or unknown:'"+look+"' pos="+ ptr);
+    }
+  }
+  function getMoveOrLineTo(){
+    var dx, dy;
+    matchOne("ml");
+    emit("LineSeg(");
+    dx = +getNumber();
+    dy = +getNumber();
+    cursorPos.x = cursorPos.x + dx;
+    cursorPos.y = cursorPos.y + dy;
+    emit(n(cursorPos.x, "x")+ " vv " + n(-cursorPos.y, "y") + "), ");
+    if ( pathStart == null ) pathStart = {...cursorPos};
+  }
+  function getClosePath(){
+    match("z");
+    emit("LineSeg(" + n(pathStart.x) + " vv " + -n(pathStart.y) + "), ");
+    pathStart == null;
+  }
+  function getBezierCurve(){
+    var dx1, dy1, dx2, dy2, dx, dy;
+    match("c");
+    emit("BezierSeg(");
+    dx1 = +getNumber();
+    dy1 = +getNumber();
+    dx2 = +getNumber();
+    dy2 = +getNumber();
+    dx = +getNumber();
+    dy = +getNumber();
+    emit( n(dx1 + cursorPos.x, "x") + " vv " + n(-dy1 + -cursorPos.y, "y") + ", "
+        + n(dx2 + cursorPos.x, "x") + " vv " + n(-dy2 + -cursorPos.y, "y") + ", "
+        + n(dx + cursorPos.x, "x") + " vv " + n(-dy + -cursorPos.y, "y") + "), ");
+    
+    cursorPos.x = cursorPos.x + dx;
+    cursorPos.y = cursorPos.y + dy;
+  }
+  function getVertical(){
+    match("v");
+    emit("LineSeg(");
+    dx = +getNumber();
+    emit( n(dx + cursorPos.x, "x") + " vv " + n(-cursorPos.y, "y") + "), ");
+    cursorPos.x = cursorPos.x + dx;
+  }
+  function getHorizontal(){
+    match("h");
+    emit("LineSeg(");
+    dy = +getNumber();
+    emit( n(cursorPos.x, "x") + " vv " + n(-dy + -cursorPos.y, "y") + "), ");
+    cursorPos.y = cursorPos.y + dy;
+  }
+  function getNumber(){
+    var ret = "";
+    if (look == "-") { ret = "-"; read(); }
+    if (!isDigit(look)) expected("Number: pos="+ ptr);
+    while (isDigite(look)){
+      if (look.toLowerCase() == "e"){ 
+        ret = ret + look;
+        read();
+        if (look == "-"){ // have to do this check here as two numbers can be expressed as 12.1-3.9
+          ret = ret + look;
+          read();
+        }
+        if (!isDigit(look))  expected("Number: pos="+ ptr); // a number must follow e or e-
+      } else {
+        ret = ret + look;
+        read();
+      }
+    }
+    eat(",");
+    return +ret;
+  }
+  function consumeWhiteSpace(){
+    while (look == " ") read();
+  }
+  function eat(str){
+    if (look == str) read();
+    consumeWhiteSpace();
+  }
+  function match(str){
+    if (look != str) expected(str+ " expected: pos="+ ptr);
+    read();
+    consumeWhiteSpace();
+  }
+  function matchOne(str){
+    if (!~str.indexOf(look)) expected(str.split("").join(" or ")+ " expected: pos="+ ptr);
+    read();
+    consumeWhiteSpace();
+  }
+  function expected(str){
+    document.getElementById("source").focus();
+    document.getElementById("source").selectionStart = ptr-1;
+    document.getElementById("source").selectionEnd = ptr;
+    throw str;
+  }
+  function isDigit(str){ //recognize a decimal digit
+    return ~"1234567890.".indexOf(str);
+  }
+  function isDigite(str){ // handle digits & 1e-5 :> e not first digit, eDigit or e-Digit
+    return ~"1234567890.e".indexOf(str);
+  }
+  function read(){
+    if (ptr <= data.length) {
+      look = data[ptr];
+      ptr = ptr + 1;
+    } else {
+      console.log("Fin");
+    }
+  }
+  function emit(str){
+    resultContainer.value = resultContainer.value + str;
+  }
+  function n(a, xOrY){
+    //deal with floats errors & set estimatedRect
+    if (xOrY == "x"){
+      if (a < estimatedRect.l) estimatedRect.l = a;
+      if (a > estimatedRect.r) estimatedRect.r = a;
+    } else if (xOrY == "y"){
+      if (a < estimatedRect.t) estimatedRect.t = a;
+      if (a > estimatedRect.b) estimatedRect.b = a;
+    }
+    return +parseFloat(a).toPrecision(12);
+  }
+</script>
+</body>
+  
+</html>	
+<!--
+m 74.016197,206.10902 c -1.131281,-0.36019 -3.719346,-0.31304 -5.157301,0.094 -
+Shape(
+      LineSeg(p1), 
+      ArcSeg(arcCentre1, p2), 
+      ArcSeg(arcCentre2, p3),
+      BezierSeg(ctrl1, ctrl2, pt5),
+      LineSeg(p5), 
+    )
+
+
+
+   https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+ An uppercase letter specifies absolute coordinates on the page, and a lowercase letter specifies relative coordinates (e.g., move 10px up and 7px to the left from the last point).
+Line commands:
+  Move To
+    M  x y
+    m  dx dy
+  Line To
+    L  x y
+    l  dx dy
+  Horizontal and Vertical Lines
+    H  x
+    h  dx
+    V  y
+    v  dy
+  Close Path
+    Z
+    z
+Curve commands
+  Bézier Curves (control points & end point)
+    C  x1 y1, x2 y2, x y 
+    c  dx1 dy1, dx2 dy2, dx dy
+    //if it follows another S command or a C command, the first control point is assumed to be a reflection of the one used previously. If the S command doesn't follow another S or C command, then the current position of the cursor is used as the first control point. In this case the result is the same as what the Q command would have produced with the same parameters.
+    S  x2 y2, x y 
+    s  dx2 dy2, dx dy
+    //quadratic curve (shared control point)
+    //Note: The co-ordinate deltas for q are both relative to the previous point (that is, dx and dy are not relative to dx1 and dy1).
+    Q  x1 y1, x y 
+    q  dx1 dy1, dx dy
+    //multiple quadratic Béziers
+    //This shortcut looks at the previous control point used and infers a new one from it. This means that after the first control point, fairly complex shapes can be made by specifying only end points.
+    //This only works if the previous command was a Q or a T command. If not, then the control point is assumed to be the same as the previous point, and only lines will be drawn
+    T  x y
+    t  dx dy
+Arcs
+    A  rx ry x-axis-rotation large-arc-flag sweep-flag x y
+    a  rx ry x-axis-rotation large-arc-flag sweep-flag dx dy
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--> 
