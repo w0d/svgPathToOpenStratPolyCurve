@@ -25,7 +25,301 @@
   <button type="button" onclick="svgPathToOpenStratShape();">Process source</button>
   <br>
   <label labelFor="estimatedSvgOffset">Estimated Svg Offset</label><input type="text" id="estimatedSvgOffset" value='' size='70' disabled>
+  <br><!DOCTYPE html>
+<head>
+  <title>SVG Path To OpenStrat Shape</title>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width'>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+  <style>
+    body { margin: 0px; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <h3>Convert SVG path to OpenStrat Shape</h3>
+  <label labelFor="svgWidth">Svg Width</label><input type="text" id="svgWidth" value='900' size="5">
+  <label labelFor="svgHeight"> Height</label><input type="text" id="svgHeight" value='600' size="5">
+  <label labelFor="fillColor"> FillColor name | hex</label><input type="text" id="fillColor" value='0xFF123456' size="20">
   <br>
+  <label for="source">Source: d=</label>
+  <textarea id='source' rows='20' cols="80"></textarea>
+  <br>
+  <label for="output">Output</label>
+  <textarea id='output' rows='20' cols="80"></textarea>
+  <br>
+  <button type="button" onclick="svgPathToOpenStratShape();">Process source</button>
+  <br>
+  <label labelFor="estimatedSvgOffset">Estimated Svg Offset</label><input type="text" id="estimatedSvgOffset" value='' size='70' disabled>
+  <br>
+  <button type="button" onclick="estimatedRecalculateShape();">Recalculate with estimate</button>
+  <br>
+  <label labelFor="svgOffset">Svg Offset: getCanvasShapeOffset();</label><input type="text" id="svgOffset" value='{"x": 107, "y": 154}'>
+  <br>
+  <button type="button" onclick="recalculateShape();">Recalculate</button>
+<script type='text/javascript'>
+  var data, resultContainer, ptr, value, look, cursorPos, pathStart, currentCommand, estimatedRect;
+
+  function estimatedRecalculateShape(){
+    var svgOffset = document.getElementById("estimatedSvgOffset").value;
+    svgOffset = JSON.parse(svgOffset);
+    svgPathToOpenStratShape(svgOffset);
+  }
+
+  function recalculateShape(){
+    var svgOffset = document.getElementById("svgOffset").value;
+    svgOffset = JSON.parse(svgOffset);
+    svgPathToOpenStratShape(svgOffset);
+  }
+
+  function svgPathToOpenStratShape(offset){
+    data = document.getElementById("source").value;
+    resultContainer = document.getElementById("output");
+    resultContainer.value = "";
+    ptr = 0;
+    value = '';
+    look = '';
+    estimatedRect = {l:100000000, r:-100000000, t:100000000, b:-100000000}; //bit of a fudge going on here
+    cursorPos = offset ? {x:-offset.x, y:offset.y} : {x:0, y:0};
+    pathStart = null;
+    currentCommand = null;
+    emit("Shape(");
+    read();
+    consumeWhiteSpace();
+    while (ptr <= data.length){
+      getCommand();
+    }
+    data = resultContainer.value;  //reusing var data as its no longer required 
+    while (", ".indexOf(data[data.length-1]) != -1) { data = data.slice(0, -1); }
+    resultContainer.value = data;
+    var fillColor = document.getElementById("fillColor").value;
+
+    emit(").fill(Green)");
+    estimatedRect.l = n(estimatedRect.l);
+    estimatedRect.r = n(estimatedRect.r);
+    estimatedRect.t = n(estimatedRect.t);
+    estimatedRect.b = n(estimatedRect.b);
+    console.log(estimatedRect);
+    document.getElementById("estimatedSvgOffset").value = JSON.stringify(
+      {x: estimatedRect.l + (estimatedRect.r-estimatedRect.l)/2,
+       y: estimatedRect.t + (estimatedRect.b-estimatedRect.t)/2});
+    resultContainer.focus();
+    resultContainer.select();
+    document.execCommand('copy');
+  }
+  function getCommand(){
+    //moveTo(M, m), lineTo(L, l), curve(C, c, S, s -- Q, q, T, t), arc(A, a) commands
+    if (isDigit(look) || look == "-") {look = currentCommand; ptr--;}
+    else currentCommand = look;
+    switch (look) {
+      case 'z':
+        getClosePath(); //this should close the shape and prepare for new one?
+        break;
+      case 'c':
+        getBezierCurve();
+        break;
+      case 'm':    //**SHOULDNT REALLY DRAW A LINE - NEEDS REVIEW (its ok if its the first..)
+      case 'l':
+        getMoveOrLineTo();
+        break;
+      case 'v':
+        getVertical();
+        break;
+      case 'h':
+        getHorizontal();
+        break;
+      default: expected("Command expected or unknown:'"+look+"' pos="+ ptr);
+    }
+  }
+  function getMoveOrLineTo(){
+    var dx, dy;
+    matchOne("ml");
+    emit("LineSeg(");
+    dx = +getNumber();
+    dy = +getNumber();
+    cursorPos.x = cursorPos.x + dx;
+    cursorPos.y = cursorPos.y + dy;
+    emit(n(cursorPos.x, "x")+ " vv " + n(-cursorPos.y, "y") + "), ");
+    if ( pathStart == null ) pathStart = {...cursorPos};
+  }
+  function getClosePath(){
+    match("z");
+    emit("LineSeg(" + n(pathStart.x) + " vv " + -n(pathStart.y) + "), ");
+    pathStart == null;
+  }
+  function getBezierCurve(){
+    var dx1, dy1, dx2, dy2, dx, dy;
+    match("c");
+    emit("BezierSeg(");
+    dx1 = +getNumber();
+    dy1 = +getNumber();
+    dx2 = +getNumber();
+    dy2 = +getNumber();
+    dx = +getNumber();
+    dy = +getNumber();
+    emit( n(dx1 + cursorPos.x, "x") + " vv " + n(-dy1 + -cursorPos.y, "y") + ", "
+        + n(dx2 + cursorPos.x, "x") + " vv " + n(-dy2 + -cursorPos.y, "y") + ", "
+        + n(dx + cursorPos.x, "x") + " vv " + n(-dy + -cursorPos.y, "y") + "), ");
+    
+    cursorPos.x = cursorPos.x + dx;
+    cursorPos.y = cursorPos.y + dy;
+  }
+  function getVertical(){
+    match("v");
+    emit("LineSeg(");
+    dx = +getNumber();
+    emit( n(dx + cursorPos.x, "x") + " vv " + n(-cursorPos.y, "y") + "), ");
+    cursorPos.x = cursorPos.x + dx;
+  }
+  function getHorizontal(){
+    match("h");
+    emit("LineSeg(");
+    dy = +getNumber();
+    emit( n(cursorPos.x, "x") + " vv " + n(-dy + -cursorPos.y, "y") + "), ");
+    cursorPos.y = cursorPos.y + dy;
+  }
+  function getNumber(){
+    var ret = "";
+    if (look == "-") { ret = "-"; read(); }
+    if (!isDigit(look)) expected("Number: pos="+ ptr);
+    while (isDigite(look)){
+      if (look.toLowerCase() == "e"){ 
+        ret = ret + look;
+        read();
+        if (look == "-"){ // have to do this check here as two numbers can be expressed as 12.1-3.9
+          ret = ret + look;
+          read();
+        }
+        if (!isDigit(look))  expected("Number: pos="+ ptr); // a number must follow e or e-
+      } else {
+        ret = ret + look;
+        read();
+      }
+    }
+    eat(",");
+    return +ret;
+  }
+  function consumeWhiteSpace(){
+    while (look == " ") read();
+  }
+  function eat(str){
+    if (look == str) read();
+    consumeWhiteSpace();
+  }
+  function match(str){
+    if (look != str) expected(str+ " expected: pos="+ ptr);
+    read();
+    consumeWhiteSpace();
+  }
+  function matchOne(str){
+    if (!~str.indexOf(look)) expected(str.split("").join(" or ")+ " expected: pos="+ ptr);
+    read();
+    consumeWhiteSpace();
+  }
+  function expected(str){
+    document.getElementById("source").focus();
+    document.getElementById("source").selectionStart = ptr-1;
+    document.getElementById("source").selectionEnd = ptr;
+    throw str;
+  }
+  function isDigit(str){ //recognize a decimal digit
+    return ~"1234567890.".indexOf(str);
+  }
+  function isDigite(str){ // handle digits & 1e-5 :> e not first digit, eDigit or e-Digit
+    return ~"1234567890.e".indexOf(str);
+  }
+  function read(){
+    if (ptr <= data.length) {
+      look = data[ptr];
+      ptr = ptr + 1;
+    } else {
+      console.log("Fin");
+    }
+  }
+  function emit(str){
+    resultContainer.value = resultContainer.value + str;
+  }
+  function n(a, xOrY){
+    //deal with floats errors & set estimatedRect
+    if (xOrY == "x"){
+      if (a < estimatedRect.l) estimatedRect.l = a;
+      if (a > estimatedRect.r) estimatedRect.r = a;
+    } else if (xOrY == "y"){
+      if (a < estimatedRect.t) estimatedRect.t = a;
+      if (a > estimatedRect.b) estimatedRect.b = a;
+    }
+    return +parseFloat(a).toPrecision(12);
+  }
+</script>
+</body>
+  
+</html>	
+<!--
+m 74.016197,206.10902 c -1.131281,-0.36019 -3.719346,-0.31304 -5.157301,0.094 -
+Shape(
+      LineSeg(p1), 
+      ArcSeg(arcCentre1, p2), 
+      ArcSeg(arcCentre2, p3),
+      BezierSeg(ctrl1, ctrl2, pt5),
+      LineSeg(p5), 
+    )
+
+
+
+   https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+ An uppercase letter specifies absolute coordinates on the page, and a lowercase letter specifies relative coordinates (e.g., move 10px up and 7px to the left from the last point).
+Line commands:
+  Move To
+    M  x y
+    m  dx dy
+  Line To
+    L  x y
+    l  dx dy
+  Horizontal and Vertical Lines
+    H  x
+    h  dx
+    V  y
+    v  dy
+  Close Path
+    Z
+    z
+Curve commands
+  Bézier Curves (control points & end point)
+    C  x1 y1, x2 y2, x y 
+    c  dx1 dy1, dx2 dy2, dx dy
+    //if it follows another S command or a C command, the first control point is assumed to be a reflection of the one used previously. If the S command doesn't follow another S or C command, then the current position of the cursor is used as the first control point. In this case the result is the same as what the Q command would have produced with the same parameters.
+    S  x2 y2, x y 
+    s  dx2 dy2, dx dy
+    //quadratic curve (shared control point)
+    //Note: The co-ordinate deltas for q are both relative to the previous point (that is, dx and dy are not relative to dx1 and dy1).
+    Q  x1 y1, x y 
+    q  dx1 dy1, dx dy
+    //multiple quadratic Béziers
+    //This shortcut looks at the previous control point used and infers a new one from it. This means that after the first control point, fairly complex shapes can be made by specifying only end points.
+    //This only works if the previous command was a Q or a T command. If not, then the control point is assumed to be the same as the previous point, and only lines will be drawn
+    T  x y
+    t  dx dy
+Arcs
+    A  rx ry x-axis-rotation large-arc-flag sweep-flag x y
+    a  rx ry x-axis-rotation large-arc-flag sweep-flag dx dy
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--> 
   <button type="button" onclick="estimatedRecalculateShape();">Recalculate with estimate</button>
   <br>
   <label labelFor="svgOffset">Svg Offset: getCanvasShapeOffset();</label><input type="text" id="svgOffset" value='{"x": 107, "y": 154}'>
