@@ -6,7 +6,7 @@ Converts a SVG path to an openstrat Shape
 Currently working for most relative svg-path commands - though Arcs may not be implemented until either openstrat supports them
 
 TODO:
-* Make Shapes for each z/Z command in the svg-path
+* Make a Shape for each z/Z command in the svg-path
 * Add the option to scale the converted svg-path
 * Complete full set of relative commands (s, q, t) (except Arcs) 
 * Add all absolute commands (the Capitols: M L H V etc)
