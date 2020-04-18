@@ -1,5 +1,5 @@
 # svgPathToOpenStratShape
-This is a utility for the (openstrat)[https://github.com/Rich2/openstrat] strategy library
+This is a utility for the [openstrat](https://github.com/Rich2/openstrat) strategy library
 
 Converts a SVG path to an openstrat Shape
 
