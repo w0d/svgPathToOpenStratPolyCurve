@@ -13,8 +13,8 @@ TODO:
 * ~~Make a Shape for each z/Z command in the svg-path~~
 * ~~Add an option to scale the converted svg-path~~
 * Remove duplicated commands (when an svg has too much detail the rounding .toPrecision can produce duplicates)
-* Complete full set of relative commands (s, q, t) (except Arcs) 
-* Add all absolute commands (the Capitols: M L H V etc)
+* Complete full set of relative commands (s, q, t) (except a - Arcs) 
+* Add all absolute commands (the Capitols: M L H V ~~Z~~ S Q T) (except A - Arcs) 
 * Consider converting Arcs to Polyline or Beziers
 * Consider parsing an svg file
 * Consider option for converting an svg file, which is a flag, into a openstrat Flag
