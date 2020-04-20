@@ -11,7 +11,7 @@ TODO:
   * ~~Pollute Global with only one var~~
 * ~~Calculate excat svg offset from origin~~
 * ~~Make a Shape for each z/Z command in the svg-path~~
-* ~~Add an option to scale the converted svg-path
+* ~~Add an option to scale the converted svg-path~~
 * Complete full set of relative commands (s, q, t) (except Arcs) 
 * Add all absolute commands (the Capitols: M L H V etc)
 * Consider converting Arcs to Polyline or Beziers
