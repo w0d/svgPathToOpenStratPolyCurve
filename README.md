@@ -4,8 +4,10 @@ This is a utility for the [openstrat](https://github.com/Rich2/openstrat) strate
 Converts a SVG path to an openstrat Shape
 
 Currently working for most relative svg-path commands - though Arcs may not be implemented until openstrat supports them
-
-TODO:
+<details>
+    <summary>
+        <b>TODO:</b>
+    </summary>
 * Tidy code
   * ~~Separate js from html~~
   * ~~Pollute Global with only one var~~
@@ -19,3 +21,4 @@ TODO:
 * Consider converting Arcs to Polyline or Beziers
 * Consider parsing an svg file
 * Consider option for converting an svg file, which is a flag, into a openstrat Flag
+</details>
