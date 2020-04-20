@@ -1,6 +1,6 @@
 var myData = {};
 
-function svgPathToOpenStratShape(offset){
+function svgPathToOpenStratShape(){
   myData.svgPath = document.getElementById("svgPath").value;
   myData.svgWidth = +document.getElementById("svgWidth").value;
   myData.svgHeight = +document.getElementById("svgHeight").value;
@@ -10,7 +10,8 @@ function svgPathToOpenStratShape(offset){
   myData.ptr = 0;
   myData.look = '';
   myData.cursorPos = {x: 0, y: 0};
-  myData.newShape = true;
+  myData.startOfPath = {...myData.cursorPos};
+  myData.isNewShape = true;
   myData.currentCommand = null;
   convertPathToShape();
   processResult();
@@ -31,11 +32,14 @@ function processResult(){
   document.execCommand('copy');
 }
 
-function getCommand(){
-  //moveTo(M, m), lineTo(L, l, V, v, H, h), curve(C, c, S, s -- Q, q, T, t), arc(A, a) commands
-  if (isDigit(myData.look) || myData.look == "-") {myData.look = myData.currentCommand; myData.ptr--;}
-  else myData.currentCommand = myData.look;
-  switch (myData.look) {
+function getCommand(){     //moveTo(M, m), lineTo(L, l, V, v, H, h), curve(C, c, S, s -- Q, q, T, t), arc(A, a) commands
+  if (isStartOfNumber(myData.look) && !myData.isNewShape) {   //its a repeated command (ie command missing)
+    myData.look = myData.currentCommand;
+    myData.ptr--;
+  } else {
+    myData.currentCommand = myData.look;
+  }
+  switch (myData.currentCommand) {
     case 'z':
     case 'Z':
       getClosePath();
@@ -43,9 +47,13 @@ function getCommand(){
     case 'c':
       getBezierCurve();
       break;
-    case 'm':    //**SHOULDNT REALLY DRAW A LINE - NEEDS REVIEW (its ok if its the first.. as thats how openstrat shapes work)
+    case 'm':
+    case 'M':
+      getMoveTo();
+      break;
     case 'l':
-      getMoveOrLineTo();
+    case 'L':
+      getLineTo();
       break;
     case 'v':
     case 'V':
@@ -59,19 +67,36 @@ function getCommand(){
   }
 }
 
-function getMoveOrLineTo(){
-  var dx, dy;
-  if (myData.look == "m" && myData.newShape) emit("Shape(");
-  matchOne("ml");
+function getMoveTo(){
+  match("m");
+  const dx = +getNumber();
+  const dy = +getNumber();
+  if (myData.isNewShape) emit("Shape(");
   emit("LineSeg(");
-  dx = +getNumber();
-  dy = +getNumber();
-  if (myData.newShape) {
-    myData.startOfPath = {x: myData.cursorPos.x + dx, y: myData.cursorPos.y + dy};
-    myData.newShape = false;
+  if (myData.currentCommand == 'm') {
+    myData.cursorPos.x = myData.cursorPos.x + dx;
+    myData.cursorPos.y = myData.cursorPos.y + dy;
+  } else {
+    myData.cursorPos.x = dx;
+    myData.cursorPos.y = dy;
   }
-  myData.cursorPos.x = myData.cursorPos.x + dx;
-  myData.cursorPos.y = myData.cursorPos.y + dy;
+  if (myData.isNewShape) myData.startOfPath = {...myData.cursorPos};
+  emit(svgToOpenStratSpace(myData.cursorPos.x, "x")+ " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
+  myData.isNewShape = false;
+}
+
+function getLineTo(){
+  match("l");
+  emit("LineSeg(");
+  const dx = +getNumber();
+  const dy = +getNumber();
+  if (myData.currentCommand == "l") {
+    myData.cursorPos.x = myData.cursorPos.x + dx;
+    myData.cursorPos.y = myData.cursorPos.y + dy;
+  } else {
+    myData.cursorPos.x = dx;
+    myData.cursorPos.y = dy;
+  }
   emit(svgToOpenStratSpace(myData.cursorPos.x, "x")+ " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
 }
 
@@ -80,19 +105,19 @@ function getClosePath(){
   emit("LineSeg(" + svgToOpenStratSpace(myData.startOfPath.x, "x") + " vv " + svgToOpenStratSpace(myData.startOfPath.y, "y") + "))");
   if (myData.fillColor[1] == 'x') emit(".fill(Colour("+myData.fillColor+"))\r"); //no css level 4 colour names contain an x so it must be hex
   else emit(".fill("+myData.fillColor+")\r");
-  myData.newShape = true;
+  myData.cursorPos = {...myData.startOfPath};
+  myData.isNewShape = true;
 }
 
 function getBezierCurve(){
-  var dx1, dy1, dx2, dy2, dx, dy;
   matchCase("c");
   emit("BezierSeg(");
-  dx1 = +getNumber();
-  dy1 = +getNumber();
-  dx2 = +getNumber();
-  dy2 = +getNumber();
-  dx = +getNumber();
-  dy = +getNumber();
+  const dx1 = +getNumber();
+  const dy1 = +getNumber();
+  const dx2 = +getNumber();
+  const dy2 = +getNumber();
+  const dx = +getNumber();
+  const dy = +getNumber();
   emit( svgToOpenStratSpace(dx1 + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy1 + myData.cursorPos.y, "y") + ", "
       + svgToOpenStratSpace(dx2 + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy2 + myData.cursorPos.y, "y") + ", "
       + svgToOpenStratSpace(dx + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy + myData.cursorPos.y, "y") + "), ");
@@ -104,39 +129,40 @@ function getBezierCurve(){
 function getVertical(){
   match("v");
   emit("LineSeg(");
-  dx = +getNumber();
-  if (myData.look == 'v') {
-    emit( svgToOpenStratSpace(dx + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
-    myData.cursorPos.x = myData.cursorPos.x + dx;
-  } else {  // myData.look must be V
-    emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
-    myData.cursorPos.x = dx;
+  const dy = +getNumber();
+  if (myData.currentCommand == "v") {
+    myData.cursorPos.y = myData.cursorPos.y + dy;
+  } else { 
+    myData.cursorPos.y = dy;
   }
+  emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
 }
 
 function getHorizontal(){
   match("h");
   emit("LineSeg(");
-  dy = +getNumber();
-  if (myData.look == 'h') {
-    emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy + myData.cursorPos.y, "y") + "), ");
-    myData.cursorPos.y = myData.cursorPos.y + dy;
-  } else {  // myData.look must be H
-    emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
-    myData.cursorPos.y = dy;
+  const dx = +getNumber();
+  if (myData.currentCommand == "h") {
+    myData.cursorPos.x = myData.cursorPos.x + dx;
+  } else {
+    myData.cursorPos.x = dx;
   }
+  emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
 }
 
 function getNumber(){
+  var dotCount = 0;   // have to check this as two numbers can be expressed as 12.1.9 ie 12.1 & 0.9
   var ret = "";
   if (myData.look == "-") { ret = "-"; read(); }
   if (!isDigit(myData.look)) expected("Number: pos="+ myData.ptr);
   while (isDigite(myData.look)){
+    if (myData.look == ".") dotCount += 1;
+    if (dotCount > 1) break;
     if (myData.look.toLowerCase() == "e"){ 
-      ret = ret + myData.look;
+      ret += "e";
       read();
-      if (myData.look == "-"){ // have to do this check here as two numbers can be expressed as 12.1-3.9
-        ret = ret + myData.look;
+      if (myData.look == "-"){ // have to do this check here as two numbers can be expressed as 12.1-3.9 ie 12.1 & -3.9
+        ret += "-";
         read();
       }
       if (!isDigit(myData.look))  expected("Number exponent: pos="+ myData.ptr); // a number must follow e or e-
@@ -170,11 +196,11 @@ function matchCase(str){
   consumeWhiteSpace();
 }
 
-function matchOne(str){
-  if (!~str.indexOf(myData.look)) expected(str.split("").join(" or ")+ " expected: pos="+ myData.ptr);
-  read();
-  consumeWhiteSpace();
-}
+// function matchOne(str){
+//   if (!~str.indexOf(myData.look)) expected(str.split("").join(" or ")+ " expected: pos="+ myData.ptr);
+//   read();
+//   consumeWhiteSpace();
+// }
 
 function expected(str){
   document.getElementById("svgPath").focus();
@@ -190,6 +216,10 @@ function isDigit(str){ //recognize a decimal digit
 
 function isDigite(str){ //  digits & exponents NB: the - that may follow e is handled by getNumber()
   return ~"1234567890.e".indexOf(str);
+}
+
+function isStartOfNumber(str){ // first char cant be e
+  return ~"1234567890.-".indexOf(str);
 }
 
 function read(){
