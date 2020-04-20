@@ -32,12 +32,13 @@ function processResult(){
 }
 
 function getCommand(){
-  //moveTo(M, m), lineTo(L, l), curve(C, c, S, s -- Q, q, T, t), arc(A, a) commands
+  //moveTo(M, m), lineTo(L, l, V, v, H, h), curve(C, c, S, s -- Q, q, T, t), arc(A, a) commands
   if (isDigit(myData.look) || myData.look == "-") {myData.look = myData.currentCommand; myData.ptr--;}
   else myData.currentCommand = myData.look;
   switch (myData.look) {
     case 'z':
-      getClosePath(); //this should close the shape and prepare for new one?
+    case 'Z':
+      getClosePath();
       break;
     case 'c':
       getBezierCurve();
@@ -47,9 +48,11 @@ function getCommand(){
       getMoveOrLineTo();
       break;
     case 'v':
+    case 'V':
       getVertical();
       break;
     case 'h':
+    case 'H':
       getHorizontal();
       break;
     default: expected("Command expected or unknown:'"+myData.look+"' pos="+ myData.ptr);
@@ -64,7 +67,7 @@ function getMoveOrLineTo(){
   dx = +getNumber();
   dy = +getNumber();
   if (myData.newShape) {
-    myData.startOfPath = {x: dx, y: dy};
+    myData.startOfPath = {x: myData.cursorPos.x + dx, y: myData.cursorPos.y + dy};
     myData.newShape = false;
   }
   myData.cursorPos.x = myData.cursorPos.x + dx;
@@ -75,14 +78,14 @@ function getMoveOrLineTo(){
 function getClosePath(){
   match("z");
   emit("LineSeg(" + svgToOpenStratSpace(myData.startOfPath.x, "x") + " vv " + svgToOpenStratSpace(myData.startOfPath.y, "y") + "))");
-  if (myData.fillColor[1] == 'x') emit(".fill(Colour("+myData.fillColor+")),\r"); //no css level 4 colour names contain an x so it must be hex
+  if (myData.fillColor[1] == 'x') emit(".fill(Colour("+myData.fillColor+"))\r"); //no css level 4 colour names contain an x so it must be hex
   else emit(".fill("+myData.fillColor+")\r");
   myData.newShape = true;
 }
 
 function getBezierCurve(){
   var dx1, dy1, dx2, dy2, dx, dy;
-  match("c");
+  matchCase("c");
   emit("BezierSeg(");
   dx1 = +getNumber();
   dy1 = +getNumber();
@@ -102,16 +105,26 @@ function getVertical(){
   match("v");
   emit("LineSeg(");
   dx = +getNumber();
-  emit( svgToOpenStratSpace(dx + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
-  myData.cursorPos.x = myData.cursorPos.x + dx;
+  if (myData.look == 'v') {
+    emit( svgToOpenStratSpace(dx + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
+    myData.cursorPos.x = myData.cursorPos.x + dx;
+  } else {  // myData.look must be V
+    emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
+    myData.cursorPos.x = dx;
+  }
 }
 
 function getHorizontal(){
   match("h");
   emit("LineSeg(");
   dy = +getNumber();
-  emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy + myData.cursorPos.y, "y") + "), ");
-  myData.cursorPos.y = myData.cursorPos.y + dy;
+  if (myData.look == 'h') {
+    emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy + myData.cursorPos.y, "y") + "), ");
+    myData.cursorPos.y = myData.cursorPos.y + dy;
+  } else {  // myData.look must be H
+    emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
+    myData.cursorPos.y = dy;
+  }
 }
 
 function getNumber(){
@@ -126,7 +139,7 @@ function getNumber(){
         ret = ret + myData.look;
         read();
       }
-      if (!isDigit(myData.look))  expected("Number: pos="+ myData.ptr); // a number must follow e or e-
+      if (!isDigit(myData.look))  expected("Number exponent: pos="+ myData.ptr); // a number must follow e or e-
     } else {
       ret = ret + myData.look;
       read();
@@ -146,6 +159,12 @@ function eat(str){
 }
 
 function match(str){
+  if (myData.look.toUpperCase() != str.toUpperCase()) expected(str+ " expected: pos="+ myData.ptr);
+  read();
+  consumeWhiteSpace();
+}
+
+function matchCase(str){
   if (myData.look != str) expected(str+ " expected: pos="+ myData.ptr);
   read();
   consumeWhiteSpace();
@@ -169,7 +188,7 @@ function isDigit(str){ //recognize a decimal digit
   return ~"1234567890.".indexOf(str);
 }
 
-function isDigite(str){ //  digits & exponents
+function isDigite(str){ //  digits & exponents NB: the - that may follow e is handled by getNumber()
   return ~"1234567890.e".indexOf(str);
 }
 
@@ -193,25 +212,15 @@ function svgToOpenStratSpace(a, xOrY){ /// sort out float rounding errors and ma
     a = -(a / myData.svgHeight - 0.5)
   }
   return +parseFloat(a).toPrecision(4);
-//  return +parseFloat(a).toPrecision(12);
 }
 /*
 <!--
-m 74.016197,206.10902 c -1.131281,-0.36019 -3.719346,-0.31304 -5.157301,0.094 -
-Shape(
-      LineSeg(p1), 
-      ArcSeg(arcCentre1, p2), 
-      ArcSeg(arcCentre2, p3),
-      BezierSeg(ctrl1, ctrl2, pt5),
-      LineSeg(p5), 
-    )
-
-
-
    https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
  An uppercase letter specifies absolute coordinates on the page, and a lowercase letter specifies relative coordinates (e.g., move 10px up and 7px to the left from the last point).
 Line commands:
-  Move To
+  Move To:
+  If this command is followed by multiple pairs of coordinates, these coordinates that follow are treated as lineto commands (discussed further in the next section), drawing a straight line. These assumed lineto commands will be relative if the moveto is relative, and absolute if the moveto is absolute.
+  If the first element begins with a relative moveto (m) path then those pairs of coordinates are treated as absolute ones and pairs of coordinates to follow are treated as relative.
     M  x y
     m  dx dy
   Line To
