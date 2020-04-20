@@ -1,49 +1,31 @@
 var myData = {};
 
-function estimatedRecalculateShape(){
-  var svgOffset = document.getElementById("estimatedSvgOffset").value;
-  svgOffset = JSON.parse(svgOffset);
-  svgPathToOpenStratShape(svgOffset);
-}
-
-function recalculateShape(){
-  var svgOffset = document.getElementById("svgOffset").value;
-  svgOffset = JSON.parse(svgOffset);
-  svgPathToOpenStratShape(svgOffset);
-}
-
 function svgPathToOpenStratShape(offset){
   myData.svgPath = document.getElementById("svgPath").value;
+  myData.svgWidth = +document.getElementById("svgWidth").value;
+  myData.svgHeight = +document.getElementById("svgHeight").value;
+  myData.fillColor = document.getElementById("fillColor").value;
   document.getElementById("openStratShape").value = '';
   myData.result = '';
   myData.ptr = 0;
   myData.look = '';
-  myData.estimatedRect = {l: Infinity, r: -Infinity, t: Infinity, b: -Infinity};
-  myData.cursorPos = offset ? {x:-offset.x, y:offset.y} : {x:0, y:0}; //openstrat origin is centre of screen
+  myData.cursorPos = {x: 0, y: 0};
+  myData.newShape = true;
   myData.currentCommand = null;
   convertPathToShape();
   processResult();
 }
-
+//***********************************************************************
 function convertPathToShape(){
-  emit("Shape(");
   read();
   consumeWhiteSpace();
   while (myData.ptr <= myData.svgPath.length){
     getCommand();
   }
-  while (", ".indexOf(myData.result[myData.result.length-1]) != -1) { myData.result = myData.result.slice(0, -1); }
-  var fillColor = document.getElementById("fillColor").value;
-  emit(").fill("+fillColor+")");
 }
 
 function processResult(){
   document.getElementById("openStratShape").value = myData.result;
-  for (const prop in myData.estimatedRect) myData.estimatedRect[prop] = n(myData.estimatedRect[prop]);
-  console.log(myData.estimatedRect);
-  document.getElementById("estimatedSvgOffset").value = JSON.stringify( //openstrat origin is centre of screen
-    {x: myData.estimatedRect.l + (myData.estimatedRect.r-myData.estimatedRect.l)/2,
-     y: myData.estimatedRect.t + (myData.estimatedRect.b-myData.estimatedRect.t)/2});
   document.getElementById("openStratShape").focus();
   document.getElementById("openStratShape").select();
   document.execCommand('copy');
@@ -76,20 +58,26 @@ function getCommand(){
 
 function getMoveOrLineTo(){
   var dx, dy;
+  if (myData.look == "m" && myData.newShape) emit("Shape(");
   matchOne("ml");
   emit("LineSeg(");
   dx = +getNumber();
   dy = +getNumber();
+  if (myData.newShape) {
+    myData.startOfPath = {x: dx, y: dy};
+    myData.newShape = false;
+  }
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
-  emit(n(myData.cursorPos.x, "x")+ " vv " + n(-myData.cursorPos.y, "y") + "), ");
-  if ( myData.cursorPos == null ) myData.cursorPos = {...myData.cursorPos};
+  emit(svgToOpenStratSpace(myData.cursorPos.x, "x")+ " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
 }
 
 function getClosePath(){
   match("z");
-  emit("LineSeg(" + n(myData.cursorPos.x) + " vv " + -n(myData.cursorPos.y) + "), ");
-  myData.cursorPos == null;
+  emit("LineSeg(" + svgToOpenStratSpace(myData.startOfPath.x, "x") + " vv " + svgToOpenStratSpace(myData.startOfPath.y, "y") + "))");
+  if (myData.fillColor[1] == 'x') emit(".fill(Colour("+myData.fillColor+")),\r"); //no css level 4 colour names contain an x so it must be hex
+  else emit(".fill("+myData.fillColor+")\r");
+  myData.newShape = true;
 }
 
 function getBezierCurve(){
@@ -102,9 +90,9 @@ function getBezierCurve(){
   dy2 = +getNumber();
   dx = +getNumber();
   dy = +getNumber();
-  emit( n(dx1 + myData.cursorPos.x, "x") + " vv " + n(-dy1 + -myData.cursorPos.y, "y") + ", "
-      + n(dx2 + myData.cursorPos.x, "x") + " vv " + n(-dy2 + -myData.cursorPos.y, "y") + ", "
-      + n(dx + myData.cursorPos.x, "x") + " vv " + n(-dy + -myData.cursorPos.y, "y") + "), ");
+  emit( svgToOpenStratSpace(dx1 + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy1 + myData.cursorPos.y, "y") + ", "
+      + svgToOpenStratSpace(dx2 + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy2 + myData.cursorPos.y, "y") + ", "
+      + svgToOpenStratSpace(dx + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy + myData.cursorPos.y, "y") + "), ");
   
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
@@ -114,7 +102,7 @@ function getVertical(){
   match("v");
   emit("LineSeg(");
   dx = +getNumber();
-  emit( n(dx + myData.cursorPos.x, "x") + " vv " + n(-myData.cursorPos.y, "y") + "), ");
+  emit( svgToOpenStratSpace(dx + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
   myData.cursorPos.x = myData.cursorPos.x + dx;
 }
 
@@ -122,7 +110,7 @@ function getHorizontal(){
   match("h");
   emit("LineSeg(");
   dy = +getNumber();
-  emit( n(myData.cursorPos.x, "x") + " vv " + n(-dy + -myData.cursorPos.y, "y") + "), ");
+  emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy + myData.cursorPos.y, "y") + "), ");
   myData.cursorPos.y = myData.cursorPos.y + dy;
 }
 
@@ -195,19 +183,17 @@ function read(){
 }
 
 function emit(str){
-  myData.result += str;
+  myData.result += str;// + '\r';
 }
 
-function n(a, xOrY){
-  //deal with floats errors & set myData.estimatedRect
-  if (xOrY == "x"){
-    if (a < myData.estimatedRect.l) myData.estimatedRect.l = a;
-    if (a > myData.estimatedRect.r) myData.estimatedRect.r = a;
-  } else if (xOrY == "y"){
-    if (a < myData.estimatedRect.t) myData.estimatedRect.t = a;
-    if (a > myData.estimatedRect.b) myData.estimatedRect.b = a;
+function svgToOpenStratSpace(a, xOrY){ /// sort out float rounding errors and map to openstrat flag space
+  if (xOrY == 'x') {
+    a = (a - myData.svgWidth / 2) / myData.svgHeight;
+  } else if (xOrY == 'y') {
+    a = -(a / myData.svgHeight - 0.5)
   }
-  return +parseFloat(a).toPrecision(12);
+  return +parseFloat(a).toPrecision(4);
+//  return +parseFloat(a).toPrecision(12);
 }
 /*
 <!--
