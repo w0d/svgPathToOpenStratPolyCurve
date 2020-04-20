@@ -12,7 +12,8 @@ TODO:
 * ~~Calculate excat svg offset from origin~~
 * ~~Make a Shape for each z/Z command in the svg-path~~
 * ~~Add an option to scale the converted svg-path~~
-* Remove duplicated commands (when an svg has too much detail the rounding .toPrecision can produce duplicates)
+* Remove duplicated commands (when an svg has too much detail the rounding .toPrecision can produce duplicates) - Optional
+* Combine concurrent Moves (see CCCP flag) - Necessary
 * Complete full set of relative commands (s, q, t) (except a - Arcs) 
 * Add all absolute commands (the Capitols: M L ~~H V Z~~ S Q T) (except A - Arcs) 
 * Consider converting Arcs to Polyline or Beziers
