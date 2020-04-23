@@ -3,7 +3,7 @@ This is a utility for the [openstrat](https://github.com/Rich2/openstrat) strate
 
 Converts a SVG path to an openstrat Shape
 
-Currently working for most relative svg-path commands - though Arcs may not be implemented until openstrat supports them
+Currently working for most relative svg-path commands - though non circular Arcs may not be implemented until openstrat supports them
 
 TODO:
 * Tidy code
