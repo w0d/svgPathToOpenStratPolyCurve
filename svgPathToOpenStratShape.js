@@ -1,4 +1,4 @@
-var myData = {};
+let myData = {};
 
 function svgPathToOpenStratShape(){
   myData.svgPath = document.getElementById("svgPath").value;
