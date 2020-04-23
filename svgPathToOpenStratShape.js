@@ -1,3 +1,7 @@
+// add myData.previousCommand
+// complete SQT
+// add A for circular 
+
 let myData = {};
 
 function svgPathToOpenStratShape(){
@@ -9,7 +13,7 @@ function svgPathToOpenStratShape(){
   myData.result = '';
   myData.ptr = 0;
   myData.look = '';
-  myData.cursorPos = {x: 0, y: 0};
+  myData.cursorPos = {x: 0, y: 0};  //this also acts as the last point at the start of processing the current command
   myData.startOfPath = {...myData.cursorPos};
   myData.isNewShape = true;
   myData.currentCommand = null;
@@ -35,7 +39,7 @@ function processResult(){
 function getCommand(){     //moveTo(M, m), lineTo(L, l, V, v, H, h), curve(C, c, S, s -- Q, q, T, t), arc(A, a) commands
   if (isStartOfNumber(myData.look) && !myData.isNewShape) {   //its a repeated command (ie command missing)
     myData.look = myData.currentCommand;
-    myData.ptr--;
+    myData.ptr--;  //fudged backtrack? myData.previousCommand could
   } else {
     myData.currentCommand = myData.look;
   }
@@ -45,6 +49,7 @@ function getCommand(){     //moveTo(M, m), lineTo(L, l, V, v, H, h), curve(C, c,
       getClosePath();
       break;
     case 'c':
+    case 'C':
       getBezierCurve();
       break;
     case 'm':
@@ -110,7 +115,7 @@ function getClosePath(){
 }
 
 function getBezierCurve(){
-  matchCase("c");
+  match("c");
   emit("BezierSeg(");
   const dx1 = +getNumber();
   const dy1 = +getNumber();
@@ -118,6 +123,7 @@ function getBezierCurve(){
   const dy2 = +getNumber();
   const dx = +getNumber();
   const dy = +getNumber();
+  if (myData.currentCommand == "C") myData.cursorPos = {x: 0, y: 0};
   emit( svgToOpenStratSpace(dx1 + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy1 + myData.cursorPos.y, "y") + ", "
       + svgToOpenStratSpace(dx2 + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy2 + myData.cursorPos.y, "y") + ", "
       + svgToOpenStratSpace(dx + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy + myData.cursorPos.y, "y") + "), ");
@@ -268,7 +274,9 @@ Curve commands
   Bézier Curves (control points & end point)
     C  x1 y1, x2 y2, x y 
     c  dx1 dy1, dx2 dy2, dx dy
-    //if it follows another S command or a C command, the first control point is assumed to be a reflection of the one used previously. If the S command doesn't follow another S or C command, then the current position of the cursor is used as the first control point. In this case the result is the same as what the Q command would have produced with the same parameters.
+    //if it follows another S command or a C command, the first control point is assumed to be a reflection of the one used previously.
+    //If the S command doesn't follow another S or C command, then the current position of the cursor is used as the first control point.
+    // In this case the result is the same as what the Q command would have produced with the same parameters.
     S  x2 y2, x y 
     s  dx2 dy2, dx dy
     //quadratic curve (shared control point)
@@ -276,8 +284,10 @@ Curve commands
     Q  x1 y1, x y 
     q  dx1 dy1, dx dy
     //multiple quadratic Béziers
-    //This shortcut looks at the previous control point used and infers a new one from it. This means that after the first control point, fairly complex shapes can be made by specifying only end points.
-    //This only works if the previous command was a Q or a T command. If not, then the control point is assumed to be the same as the previous point, and only lines will be drawn
+    //This shortcut looks at the previous control point used and infers a new one from it. 
+    //This means that after the first control point, fairly complex shapes can be made by specifying only end points.
+    //This only works if the previous command was a Q or a T command. 
+    //If not, then the control point is assumed to be the same as the previous point, and only lines will be drawn
     T  x y
     t  dx dy
 Arcs
