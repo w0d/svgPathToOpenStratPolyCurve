@@ -1,9 +1,9 @@
-# svgPathToOpenStratShape
+# svgPathToOpenStratPolyCurve
 This is a utility for the [openstrat](https://github.com/Rich2/openstrat) strategy library
 
-Converts a SVG path to an openstrat Shape
+Converts a SVG path to an openstrat PolyCurve
 
-Currently working for most relative svg-path commands - though non circular Arcs may not be implemented until openstrat supports them
+Currently working for most svg-path commands - though non circular Arcs may not be implemented until openstrat supports them
 
 TODO:
 * Tidy code
