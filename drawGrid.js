@@ -21,8 +21,8 @@ function drawCanvasGrid(){
   context.stroke();
 }
 
-function drawOpenStratGrid(){
-  var x = document.getElementById("scanv");
+function drawOpenStratGrid(canvasId){
+  var x = canvasId ? document.getElementById(canvasId) : document.getElementById("scanv");
   var context = x.getContext("2d");
 
   var width = context.canvas.width;
@@ -56,7 +56,6 @@ function drawOpenStratGrid(){
   }
   context.stroke();
   context.beginPath();
-  //context.strokeStyle = 'red';
   context.moveTo(width/2, 0);
   context.lineTo(width/2, height);  //redraw origin lines to make them stand out even more
   context.moveTo(0, height/2);
@@ -66,3 +65,25 @@ function drawOpenStratGrid(){
 
 //drawCanvasGrid()
 drawOpenStratGrid();
+
+document.body.onmousemove = function(e){
+  if (document.getElementById("mouseFeedback") == null) {
+    let myDiv = document.createElement("div");
+    myDiv.id = "mouseFeedback";
+    myDiv.style = "position:absolute;left:0px;top:0px;width:100px;height:14px";
+    document.body.appendChild(myDiv);
+  }
+
+  let feedbackDiv = document.getElementById("mouseFeedback");
+  let theCanvas = document.getElementById("scanv");
+  feedbackDiv.innerText = ""+(e.clientX - theCanvas.width/2)+", "+(-e.clientY + theCanvas.height/2);
+}
+
+function makeBackgroundGrid(){
+  let underCanvas = document.createElement("canvas");
+  let theCanvas = document.getElementById("scanv");
+  underCanvas.id = "underCanvas";
+  underCanvas.style = "position:absolute;left:0px;top:0px;width:"+theCanvas.width+"px;height:"+theCanvas.height+"px";
+  document.body.prepend(underCanvas);
+  drawOpenStratGrid(underCanvas.id);
+}
