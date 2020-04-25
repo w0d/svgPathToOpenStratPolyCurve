@@ -18,7 +18,7 @@ TODO:
 * Consider converting Arcs to Polyline or Beziers
 * Consider parsing an svg file
 * Consider option for converting an svg file, which is a flag, into a openstrat Flag
-* Turn drawGrid.js development helper into bookmarklet and/or integrate into deb.scala
+* Turn openStratJsUtils.js development helper into ~~bookmarklets~~ and/or integrate into deb.scala
 <details>
     <summary>
         <b></b>
