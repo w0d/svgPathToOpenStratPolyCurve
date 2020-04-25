@@ -11,13 +11,13 @@
       body { margin: 0px; overflow: hidden; }
     </style>
     <script type="application/javascript" src="svgPathToOpenStratPolyCurve.js"></script>
-    <script type="application/javascript" src="getCanvasImageOffset.js"></script>
+<!--    <script type="application/javascript" src="openStratJsUtils.js"></script>--> 
   </head>
   <body>
     <h3>Convert SVG path to OpenStrat PolyCurve</h3>
     <label labelFor="svgWidth">Svg Width</label><input type="text" id="svgWidth" value='1200' size="5">
     <label labelFor="svgHeight"> Height</label><input type="text" id="svgHeight" value='600' size="5">
-    <label labelFor="fillColor"> FillColor Name | Hex</label><input type="text" id="fillColor" value='0xFFffd700' size="20">
+    <label labelFor="fillColor"> FillColor Name | Hex</label><input type="text" id="fillColor" value='0xFF123456' size="20">
     <br>
     <label for="svgPath">svgPath: d=</label>
     <textarea id='svgPath' rows='20' cols="80">m 10,10 c 20,20 30,30 40,40 l 60,60, v 70 h 80 z</textarea>
