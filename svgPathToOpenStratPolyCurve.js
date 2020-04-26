@@ -179,6 +179,19 @@ function getNumber(){
   return +ret;
 }
 
+function svgToOpenStratSpace(number, axis){ /// sort out float rounding errors and map to openstrat flag space
+  if (axis == 'x') {
+    number = (number - myData.svgWidth / 2) / myData.svgHeight;
+  } else if (axis == 'y') {
+    number = -(number / myData.svgHeight - 0.5)
+  }
+  return +parseFloat(number).toPrecision(4);
+}
+
+function reflectionOfLastControlPoint(){
+  return {x: 2*myData.cursorPos.x - myData.lastControlPoint.x, y: 2*myData.cursorPos.y - myData.lastControlPoint.y};
+}
+
 function consumeWhiteSpace(){
   while (myData.look == " ") read();
 }
@@ -237,15 +250,6 @@ function read(){
 
 function emit(str){
   myData.result += str;// + '\r';
-}
-
-function svgToOpenStratSpace(a, xOrY){ /// sort out float rounding errors and map to openstrat flag space
-  if (xOrY == 'x') {
-    a = (a - myData.svgWidth / 2) / myData.svgHeight;
-  } else if (xOrY == 'y') {
-    a = -(a / myData.svgHeight - 0.5)
-  }
-  return +parseFloat(a).toPrecision(4);
 }
 /*
 <!--
