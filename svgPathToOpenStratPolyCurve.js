@@ -15,6 +15,7 @@ function svgPathToOpenStratPolyCurve(){
   myData.look = '';
   myData.cursorPos = {x: 0, y: 0};  //this also acts as the last point at the start of processing the current command
   myData.startOfPath = {...myData.cursorPos}; //this is repeated for each new complete path in the path (in the z command)
+  myData.lastControlPoint = null;
   myData.isNewPolyCurve = true;
   myData.currentCommand = null;
   convertPathToPolyCurve();
@@ -88,13 +89,9 @@ function getMoveTo(){
   const dy = +getNumber();
   if (myData.isNewPolyCurve) emit("PolyCurve(");
   emit("LineSeg(");
-  if (myData.currentCommand == 'm') {
-    myData.cursorPos.x = myData.cursorPos.x + dx;
-    myData.cursorPos.y = myData.cursorPos.y + dy;
-  } else {
-    myData.cursorPos.x = dx;
-    myData.cursorPos.y = dy;
-  }
+  if (myData.currentCommand == 'M') myData.cursorPos = {x: 0, y: 0};
+  myData.cursorPos.x = myData.cursorPos.x + dx;
+  myData.cursorPos.y = myData.cursorPos.y + dy;
   if (myData.isNewPolyCurve) myData.startOfPath = {...myData.cursorPos};
   emit(svgToOpenStratSpace(myData.cursorPos.x, "x")+ " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
   myData.isNewPolyCurve = false;
@@ -105,13 +102,9 @@ function getLineTo(){
   emit("LineSeg(");
   const dx = +getNumber();
   const dy = +getNumber();
-  if (myData.currentCommand == "l") {
-    myData.cursorPos.x = myData.cursorPos.x + dx;
-    myData.cursorPos.y = myData.cursorPos.y + dy;
-  } else {
-    myData.cursorPos.x = dx;
-    myData.cursorPos.y = dy;
-  }
+  if (myData.currentCommand == "L") myData.cursorPos = {x: 0, y: 0};
+  myData.cursorPos.x = myData.cursorPos.x + dx;
+  myData.cursorPos.y = myData.cursorPos.y + dy;
   emit(svgToOpenStratSpace(myData.cursorPos.x, "x")+ " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
 }
 
@@ -122,6 +115,7 @@ function getClosePath(){
   else emit(".fill("+myData.fillColor+")\r");
   myData.cursorPos = {...myData.startOfPath};
   myData.isNewPolyCurve = true;
+  myData.lastControlPoint = null;
 }
 
 function getBezierCurve(){
@@ -137,7 +131,7 @@ function getBezierCurve(){
   emit( svgToOpenStratSpace(dx1 + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy1 + myData.cursorPos.y, "y") + ", "
       + svgToOpenStratSpace(dx2 + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy2 + myData.cursorPos.y, "y") + ", "
       + svgToOpenStratSpace(dx + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy + myData.cursorPos.y, "y") + "), ");
-  
+  myData.lastControlPoint = {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y};
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
 }
@@ -146,11 +140,8 @@ function getVertical(){
   match("v");
   emit("LineSeg(");
   const dy = +getNumber();
-  if (myData.currentCommand == "v") {
-    myData.cursorPos.y = myData.cursorPos.y + dy;
-  } else { 
-    myData.cursorPos.y = dy;
-  }
+  if (myData.currentCommand == "V") myData.cursorPos = {x: 0, y: 0};
+  myData.cursorPos.y = myData.cursorPos.y + dy;
   emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
 }
 
@@ -158,11 +149,8 @@ function getHorizontal(){
   match("h");
   emit("LineSeg(");
   const dx = +getNumber();
-  if (myData.currentCommand == "h") {
-    myData.cursorPos.x = myData.cursorPos.x + dx;
-  } else {
-    myData.cursorPos.x = dx;
-  }
+  if (myData.currentCommand == "H") myData.cursorPos = {x: 0, y: 0};
+  myData.cursorPos.x = myData.cursorPos.x + dx;
   emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
 }
 
