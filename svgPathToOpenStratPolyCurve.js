@@ -1,6 +1,6 @@
 // TODO  If the path data string contains no valid commands, then the behavior is the same as the none value.
 //       flag/booleans must be interpolated as fractions between zero and one, with any non-zero value considered to be a value of one/true. 
-//
+//       handle viewport rather than just width & height
 
 let myData = {};
 
@@ -41,13 +41,12 @@ function processResult(){  //display result and copy PolyCurve(s) to clipboard
 
 function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H, h), curve(C, c, S, s -- Q, q, T, t), arc(A, a) commands
   if (isStartOfNumber(myData.look) && !myData.isNewPolyCurve) {   //its a repeated command (ie command missing)
-    if (myData.currentCommand == "m") myData.look = "l";
-    else if (myData.currentCommand == "m") myData.look = "L";
+    if (myData.currentCommand == "m") myData.look = "l"; // repeated moveTo are intrepreted as lineTo in spec
+    else if (myData.currentCommand == "M") myData.look = "L";
     else myData.look = myData.currentCommand;
     myData.ptr--;  //fudged backtrack?
-  } else {
-    myData.currentCommand = myData.look;
   }
+  myData.currentCommand = myData.look;
   switch (myData.currentCommand) {
     case 'z':
     case 'Z':
@@ -93,7 +92,7 @@ function getMoveTo(){
   const dx = +getNumber();
   const dy = +getNumber();
   if (myData.isNewPolyCurve) emit("PolyCurve(");
-  else warning("moveTo should represent the start of a new sub-path");
+  else warning("moveTo should represent the start of a new sub-path ie only ");
   emit("LineSeg(");
   if (myData.currentCommand == 'M') myData.cursorPos = {x: 0, y: 0};
   myData.cursorPos.x = myData.cursorPos.x + dx;
@@ -187,9 +186,9 @@ function getNumber(){
 
 function svgToOpenStratSpace(number, axis){ /// sort out float rounding errors and map to openstrat flag space
   if (axis == 'x') {
-    number = (number - myData.svgWidth / 2) / myData.svgHeight;
+//    number = (number - myData.svgWidth / 2) / myData.svgHeight;
   } else if (axis == 'y') {
-    number = -(number / myData.svgHeight - 0.5)
+//    number = -(number / myData.svgHeight - 0.5)
   }
   return +parseFloat(number).toPrecision(4);
 }
