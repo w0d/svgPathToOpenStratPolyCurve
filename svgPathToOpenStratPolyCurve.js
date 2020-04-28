@@ -6,6 +6,7 @@ let myData = {};
 
 function svgPathToOpenStratPolyCurve(){
   document.getElementById("openStratPolyCurve").value = '';
+  document.getElementById("errors").value = '';  //**ToReview**// should? report errors and return shape up to last segment before error
   myData.svgPath = document.getElementById("svgPath").value;
   myData.svgWidth = +document.getElementById("svgWidth").value;
   myData.svgHeight = +document.getElementById("svgHeight").value;
@@ -13,11 +14,12 @@ function svgPathToOpenStratPolyCurve(){
   myData.result = '';
   myData.ptr = 0;
   myData.look = '';
-  myData.cursorPos = {x: 0, y: 0};  //this also acts as the last point at the start of processing the current command
-  myData.startOfPath = {...myData.cursorPos}; //this is repeated for each new complete path in the path (in the z command)
-  myData.lastControlPoint = null;
-  myData.isNewPolyCurve = true;
   myData.currentCommand = null;
+  myData.isNewPolyCurve = true;  //PolyCurve does not support sub-paths, so we will create a new PolyCurve for each sub-path
+  myData.startOfPath = {...myData.cursorPos}; //this is repeated for each sub-path (in the z command)
+  myData.cursorPos = {x: 0, y: 0};  //this also acts as the last point at the start of processing the current command
+  myData.lastControlPoint = null;
+  if (myData.svgPath == "none") return; //as with d='' defines a valid empty path which disables rendering of the path
   convertPathToPolyCurve();
   processResult();
 }
@@ -77,9 +79,10 @@ function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H,
     case 'T':
     case 'a':
     case 'A':
-      expected("Command not implemented:'"+myData.look+"' pos="+ myData.ptr);
+      warning("Command not implemented:'"+myData.look+"'"); //should this have just eaten coords until next command...
+      expected("Known command"); //should this have just eaten coords until next command...
       break;
-    default: expected("Command or number expected:'"+myData.look+"' pos="+ myData.ptr);
+    default: expected("'"+myData.look+"' ? Command or number");
   }
 }
 
@@ -158,18 +161,18 @@ function getNumber(){
   var dotCount = 0;   // have to check this as two numbers can be expressed as 3.814.383 ie 3.814 & .383 ***but this is ambigious!!! see iraq flag eg 2.008.656.667 implies only sane way to interpret as is here****
   var ret = "";
   if (myData.look == "-") { ret = "-"; read(); }
-  if (!isDigit(myData.look)) expected("Number: pos="+ myData.ptr);
+  if (!isDigit(myData.look)) expected("Number");
   while (isDigite(myData.look)){
     if (myData.look == ".") dotCount += 1;
     if (dotCount > 1) break;
-    if (myData.look.toLowerCase() == "e"){ 
+    if (myData.look.toLowerCase() == "e"){ // this doesn't appear in the spec but IS found in the wild
       ret += "e";
       read();
       if (myData.look == "-"){ // have to do this check here as two numbers can be expressed as 12.1-3.9 ie 12.1 & -3.9
         ret += "-";
         read();
       }
-      if (!isDigit(myData.look))  expected("Number exponent: pos="+ myData.ptr); // a number must follow e or e-
+      if (!isDigit(myData.look))  expected("Number exponent:"); // a number must follow e or e-
     } else {
       ret = ret + myData.look;
       read();
@@ -188,12 +191,13 @@ function svgToOpenStratSpace(number, axis){ /// sort out float rounding errors a
   return +parseFloat(number).toPrecision(4);
 }
 
-function reflectionOfLastControlPoint(){
+function reflectionOfLastControlPoint(){  // For S/s and T/t commands 1st control point = reflection of last segments control point relative to the current point.
+  if (myData.lastControlPoint == null) warning(str)
   return {x: 2*myData.cursorPos.x - myData.lastControlPoint.x, y: 2*myData.cursorPos.y - myData.lastControlPoint.y};
 }
 
 function consumeWhiteSpace(){
-  while (myData.look == " ") read();
+  while (myData.look == " " || myData.look == "\n" || myData.look == "\r" || myData.look == "\t" || myData.look == "\f") read();
 }
 
 function eat(str){
@@ -202,28 +206,33 @@ function eat(str){
 }
 
 function match(str){
-  if (myData.look.toUpperCase() != str.toUpperCase()) expected(str+ " expected: pos="+ myData.ptr);
+  if (myData.look.toUpperCase() != str.toUpperCase()) expected(str);
   read();
   consumeWhiteSpace();
 }
 
 function matchCase(str){
-  if (myData.look != str) expected(str+ " expected: pos="+ myData.ptr);
+  if (myData.look != str) expected(str);
   read();
   consumeWhiteSpace();
 }
 
 // function matchOne(str){
-//   if (!~str.indexOf(myData.look)) expected(str.split("").join(" or ")+ " expected: pos="+ myData.ptr);
+//   if (!~str.indexOf(myData.look)) expected(str.split("").join(" or "));
 //   read();
 //   consumeWhiteSpace();
 // }
+
+function warning(str){
+  document.getElementById("errors").value += "WARNING: " + str + "\n";
+}
 
 function expected(str){
   document.getElementById("svgPath").focus();
   document.getElementById("svgPath").selectionStart = myData.ptr-1;
   document.getElementById("svgPath").selectionEnd = myData.ptr;
   document.getElementById("openStratPolyCurve").value = myData.result;
+  document.getElementById("errors").value = "Expected: " + str + " pos="+ myData.ptr-1;
   throw str;
 }
 
@@ -296,4 +305,95 @@ Arcs
     A  rx ry x-axis-rotation large-arc-flag sweep-flag x y
     a  rx ry x-axis-rotation large-arc-flag sweep-flag dx dy
 --> 
+
+9.3.9. The grammar for path data
+
+SVG path data matches the following EBNF grammar.
+
+svg_path::= wsp* moveto? (moveto drawto_command*)?
+
+drawto_command::=
+    moveto
+    | closepath
+    | lineto
+    | horizontal_lineto
+    | vertical_lineto
+    | curveto
+    | smooth_curveto
+    | quadratic_bezier_curveto
+    | smooth_quadratic_bezier_curveto
+    | elliptical_arc
+
+moveto::=
+    ( "M" | "m" ) wsp* coordinate_pair_sequence
+
+closepath::=
+    ("Z" | "z")
+
+lineto::=
+    ("L"|"l") wsp* coordinate_pair_sequence
+
+horizontal_lineto::=
+    ("H"|"h") wsp* coordinate_sequence
+
+vertical_lineto::=
+    ("V"|"v") wsp* coordinate_sequence
+
+curveto::=
+    ("C"|"c") wsp* curveto_coordinate_sequence
+
+curveto_coordinate_sequence::=
+    coordinate_pair_triplet
+    | (coordinate_pair_triplet comma_wsp? curveto_coordinate_sequence)
+
+smooth_curveto::=
+    ("S"|"s") wsp* smooth_curveto_coordinate_sequence
+
+smooth_curveto_coordinate_sequence::=
+    coordinate_pair_double
+    | (coordinate_pair_double comma_wsp? smooth_curveto_coordinate_sequence)
+
+quadratic_bezier_curveto::=
+    ("Q"|"q") wsp* quadratic_bezier_curveto_coordinate_sequence
+
+quadratic_bezier_curveto_coordinate_sequence::=
+    coordinate_pair_double
+    | (coordinate_pair_double comma_wsp? quadratic_bezier_curveto_coordinate_sequence)
+
+smooth_quadratic_bezier_curveto::=
+    ("T"|"t") wsp* coordinate_pair_sequence
+
+elliptical_arc::=
+    ( "A" | "a" ) wsp* elliptical_arc_argument_sequence
+
+elliptical_arc_argument_sequence::=
+    elliptical_arc_argument
+    | (elliptical_arc_argument comma_wsp? elliptical_arc_argument_sequence)
+
+elliptical_arc_argument::=
+    number comma_wsp? number comma_wsp? number comma_wsp
+    flag comma_wsp? flag comma_wsp? coordinate_pair
+
+coordinate_pair_double::=
+    coordinate_pair comma_wsp? coordinate_pair
+
+coordinate_pair_triplet::=
+    coordinate_pair comma_wsp? coordinate_pair comma_wsp? coordinate_pair
+
+coordinate_pair_sequence::=
+    coordinate_pair | (coordinate_pair comma_wsp? coordinate_pair_sequence)
+
+coordinate_sequence::=
+    coordinate | (coordinate comma_wsp? coordinate_sequence)
+
+coordinate_pair::= coordinate comma_wsp? coordinate
+
+coordinate::= sign? number
+
+sign::= "+"|"-"
+number ::= ([0-9])+
+flag::=("0"|"1")
+comma_wsp::=(wsp+ ","? wsp*) | ("," wsp*)
+wsp ::= (#x9 | #x20 | #xA | #xC | #xD)
+
 */

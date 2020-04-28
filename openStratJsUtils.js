@@ -27,9 +27,9 @@ function drawCanvasGrid(){
   context.stroke();
 }
 
-function drawOpenStratGrid(canvasId){
-  var x = canvasId ? document.getElementById(canvasId) : document.getElementById("scanv");
-  var context = x.getContext("2d");
+function drawOpenStratGrid(canvasRef){
+  var thisCanvas = canvasRef ? canvasRef : document.getElementById("scanv");
+  var context = thisCanvas.getContext("2d");
 
   var width = context.canvas.width;
   var height = context.canvas.height;
@@ -39,7 +39,7 @@ function drawOpenStratGrid(canvasId){
 
   context.beginPath();
   context.strokeStyle = 'aqua';
-  context.lineWidth = 0.25;
+  context.lineWidth = 0.1;
   for (var i=centreX; i <= width; i=i+10){
     context.moveTo(i, 0);
     context.lineTo(i, height);
@@ -69,24 +69,26 @@ function drawOpenStratGrid(canvasId){
   context.stroke();
 }
 
-document.body.onmousemove = function(e){
-  if (document.getElementById("mouseFeedback") == null) {
-    let myDiv = document.createElement("div");
-    myDiv.id = "mouseFeedback";
-    myDiv.style = "position:absolute;left:0px;top:0px;width:100px;height:14px";
-    document.body.appendChild(myDiv);
+function getMouseFeedback(){
+  document.body.onmousemove = function(e){
+    if (document.getElementById("mouseFeedback") == null) {
+      let myDiv = document.createElement("div");
+      myDiv.id = "mouseFeedback";
+      myDiv.style = "position:absolute;left:0px;top:0px;width:130px;height:14px";
+      document.body.appendChild(myDiv);
+    }
+    let feedbackDiv = document.getElementById("mouseFeedback");
+    let openstratCanvas = document.getElementById("scanv");
+    feedbackDiv.innerText = ""+(e.clientX - openstratCanvas.width/2)+", "+(-e.clientY + openstratCanvas.height/2);
   }
-
-  let feedbackDiv = document.getElementById("mouseFeedback");
-  let theCanvas = document.getElementById("scanv");
-  feedbackDiv.innerText = ""+(e.clientX - theCanvas.width/2)+", "+(-e.clientY + theCanvas.height/2);
 }
 
-function makeBackgroundGrid(){
-  let underCanvas = document.createElement("canvas");
-  let theCanvas = document.getElementById("scanv");
-  underCanvas.id = "underCanvas";
-  underCanvas.style = "position:absolute;left:0px;top:0px;width:"+theCanvas.width+"px;height:"+theCanvas.height+"px";
-  document.body.prepend(underCanvas);
-  drawOpenStratGrid(underCanvas.id);
+function makeBackgroundGrid(){ //using drawOpenStratGrid() may work better on some monitors but will overlay the grid ontop of the canvas
+  let tempCanvas = document.createElement("canvas");
+  let openstratCanvas = document.getElementById("scanv");
+  tempCanvas.width = openstratCanvas.width;
+  tempCanvas.height = openstratCanvas.height;
+  drawOpenStratGrid(tempCanvas);
+  document.body.style.background = 'url(' + tempCanvas.toDataURL() + ')';
+  document.getElementById("scanv").style.opacity = 0.75;
 }
