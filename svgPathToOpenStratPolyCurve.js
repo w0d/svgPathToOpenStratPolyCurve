@@ -1,6 +1,6 @@
-// add myData.previousCommand?
-// complete SQT
-// add A for circular 
+// TODO  If the path data string contains no valid commands, then the behavior is the same as the none value.
+//       flag/booleans must be interpolated as fractions between zero and one, with any non-zero value considered to be a value of one/true. 
+//
 
 let myData = {};
 
@@ -41,8 +41,10 @@ function processResult(){  //display result and copy PolyCurve(s) to clipboard
 
 function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H, h), curve(C, c, S, s -- Q, q, T, t), arc(A, a) commands
   if (isStartOfNumber(myData.look) && !myData.isNewPolyCurve) {   //its a repeated command (ie command missing)
-    myData.look = myData.currentCommand;
-    myData.ptr--;  //fudged backtrack? myData.previousCommand could
+    if (myData.currentCommand == "m") myData.look = "l";
+    else if (myData.currentCommand == "m") myData.look = "L";
+    else myData.look = myData.currentCommand;
+    myData.ptr--;  //fudged backtrack?
   } else {
     myData.currentCommand = myData.look;
   }
@@ -79,10 +81,10 @@ function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H,
     case 'T':
     case 'a':
     case 'A':
-      warning("Command not implemented:'"+myData.look+"'"); //should this have just eaten coords until next command...
+      warning("Command not implemented: '"+myData.look+"'"); //should this have just eaten coords until next command...
       expected("Known command"); //should this have just eaten coords until next command...
       break;
-    default: expected("'"+myData.look+"' ? Command or number");
+    default: expected(myData.look+"?? Command or number");
   }
 }
 
@@ -91,6 +93,7 @@ function getMoveTo(){
   const dx = +getNumber();
   const dy = +getNumber();
   if (myData.isNewPolyCurve) emit("PolyCurve(");
+  else warning("moveTo should represent the start of a new sub-path");
   emit("LineSeg(");
   if (myData.currentCommand == 'M') myData.cursorPos = {x: 0, y: 0};
   myData.cursorPos.x = myData.cursorPos.x + dx;
@@ -192,7 +195,10 @@ function svgToOpenStratSpace(number, axis){ /// sort out float rounding errors a
 }
 
 function reflectionOfLastControlPoint(){  // For S/s and T/t commands 1st control point = reflection of last segments control point relative to the current point.
-  if (myData.lastControlPoint == null) warning(str)
+  if (myData.lastControlPoint == null) {
+    warning("reflectionOfLastControlPoint requires last segment to be bezier");
+    expected("last segment to be bezier");
+  }
   return {x: 2*myData.cursorPos.x - myData.lastControlPoint.x, y: 2*myData.cursorPos.y - myData.lastControlPoint.y};
 }
 
@@ -232,8 +238,9 @@ function expected(str){
   document.getElementById("svgPath").selectionStart = myData.ptr-1;
   document.getElementById("svgPath").selectionEnd = myData.ptr;
   document.getElementById("openStratPolyCurve").value = myData.result;
-  document.getElementById("errors").value = "Expected: " + str + " pos="+ myData.ptr-1;
-  throw str;
+  let errorStr = str + " expected: pos=" + myData.ptr;
+  document.getElementById("errors").value += errorStr;
+  throw errorStr;
 }
 
 function isDigit(str){ //recognize a decimal digit
