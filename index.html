@@ -28,12 +28,13 @@
     <button type="button" onclick="svgPathToOpenStratPolyCurve();">Process svgPath</button>
     <br>
     <label for="errors">Errors</label>
-    <textarea id='errors' rows='5' cols="40"></textarea>
-<!--    <br>
-    <label labelFor="estimatedSvgOffset">Estimated Svg Offset</label><input type="text" id="estimatedSvgOffset" value='' size='40' disabled>
+    <textarea id='errors' rows='5' cols="65"></textarea>
     <br>
-    <button type="button" onclick="estimatedRecalculateShape();">Recalculate with estimate</button>
-    <br>
+    <label labelFor="svgCoordx">svg x=</label><input type="text" id="svgCoordx" value='0' size='8'>
+    <label labelFor="svgCoordy"> y=</label><input type="text" id="svgCoordy" value='0' size='8'>
+    <button type="button" onclick="translateVector();">map to Vec2</button>
+    <label labelFor="Vec2">Vec2:</label><input type="text" id="Vec2" value='' size='20'>
+<!--     <br>
     <label labelFor="svgOffset">Adjust Svg Offset</label><input type="text" id="svgOffset" value='{"x": 0, "y": 0}'>
     <br>
     <button type="button" onclick="recalculateShape();">Recalculate</button>
