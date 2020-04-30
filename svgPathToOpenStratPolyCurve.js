@@ -1,6 +1,7 @@
 // TODO  If the path data string contains no valid commands, then the behavior is the same as the none value.
 //       flag/booleans must be interpolated as fractions between zero and one, with any non-zero value considered to be a value of one/true. 
 //       handle viewport rather than just width & height
+//       handle the + sign
 
 let myData = {};
 
@@ -23,7 +24,16 @@ function svgPathToOpenStratPolyCurve(){
   convertPathToPolyCurve();
   processResult();
 }
-//***********************************************************************
+
+function translateVector(){
+  myData.svgWidth = +document.getElementById("svgWidth").value;
+  myData.svgHeight = +document.getElementById("svgHeight").value;
+  pointToTranslate = JSON.parse('{"x":'+ document.getElementById("svgCoordx").value + ', "y":' + document.getElementById("svgCoordy").value +'}');
+  pointToTranslate.x = +parseFloat(pointToTranslate.x/myData.svgHeight).toPrecision(4);
+  pointToTranslate.y = +parseFloat(-pointToTranslate.y/myData.svgHeight).toPrecision(4);
+  document.getElementById("Vec2").value = pointToTranslate.x + " vv " + pointToTranslate.y
+}
+
 function convertPathToPolyCurve(){
   read();  //prime the pump
   consumeWhiteSpace();
@@ -40,12 +50,18 @@ function processResult(){  //display result and copy PolyCurve(s) to clipboard
 }
 
 function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H, h), curve(C, c, S, s -- Q, q, T, t), arc(A, a) commands
-  if (isStartOfNumber(myData.look) && !myData.isNewPolyCurve) {   //its a repeated command (ie command missing)
-    if (myData.currentCommand == "m") myData.look = "l"; // repeated moveTo are intrepreted as lineTo in spec
+  if (isStartOfNumber(myData.look) && !myData.isNewPolyCurve) {   // its an implicit command (repeated) (ie command missing)
+    if (myData.currentCommand == "m") myData.look = "l";          // implicit moveTo are intrepreted as lineTo in spec
     else if (myData.currentCommand == "M") myData.look = "L";
     else myData.look = myData.currentCommand;
-    myData.ptr--;  //fudged backtrack?
-  }
+    myData.ptr--;
+  } else if (myData.isNewPolyCurve) {
+    emit("PolyCurve(");
+    //if M || m doesnt follow z then need to spit out a moveto (in openstrat no moveto but 1st lineto acts as one at start of shape (or sub-shape))
+    if ("Zz".indexOf(myData.currentCommand) != -1 && "M" != myData.look.toUpperCase()) {
+      emit("LineSeg(" + svgToOpenStratSpace(myData.startOfPath.x, "x") + " vv " + svgToOpenStratSpace(myData.startOfPath.y, "y") + "), ");
+    }
+  } 
   myData.currentCommand = myData.look;
   switch (myData.currentCommand) {
     case 'z':
@@ -54,7 +70,7 @@ function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H,
       break;
     case 'c':
     case 'C':
-      getBezierCurve();
+      getCurveTo();
       break;
     case 'm':
     case 'M':
@@ -74,58 +90,69 @@ function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H,
       break;
     case 's':
     case 'S':
+      getSmoothCurveTo();
+      break;
     case 'q':
     case 'Q':
     case 't':
     case 'T':
     case 'a':
     case 'A':
-      warning("Command not implemented: '"+myData.look+"'"); //should this have just eaten coords until next command...
-      expected("Known command"); //should this have just eaten coords until next command...
+      warning("Command not implemented: '"+myData.look+"'");
+      expected("Implemented command");
       break;
     default: expected(myData.look+"?? Command or number");
   }
+  if ("Z" == myData.currentCommand.toUpperCase()) myData.isNewPolyCurve = true;
+  else myData.isNewPolyCurve = false;
+  if ("CcSs".indexOf(myData.currentCommand) != -1) myData.lastControlPoint = null;
+}
+
+function emitLineSeg(x, y){
+  emit("LineSeg(");
+  emit(svgToOpenStratSpace(x, "x")+ " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
+}
+
+function emitBezierSeg(controlPoint1, controlPoint2, endPoint){
+  emit("BezierSeg(");
+  emit( svgToOpenStratSpace(controlPoint1.x, "x") + " vv " + svgToOpenStratSpace(controlPoint1.y, "y") + ", "
+      + svgToOpenStratSpace(controlPoint2.x, "x") + " vv " + svgToOpenStratSpace(controlPoint2.y, "y") + ", "
+      + svgToOpenStratSpace(endPoint.x, "x") + " vv " + svgToOpenStratSpace(endPoint.y, "y") + "), "
+  );
 }
 
 function getMoveTo(){
   match("m");
   const dx = +getNumber();
   const dy = +getNumber();
-  if (myData.isNewPolyCurve) emit("PolyCurve(");
-  else warning("moveTo should represent the start of a new sub-path ie only ");
-  emit("LineSeg(");
+  if (!myData.isNewPolyCurve) warning("Literal (not implicit) moveTo should represent the start of a new sub-path ie only ");
   if (myData.currentCommand == 'M') myData.cursorPos = {x: 0, y: 0};
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
   if (myData.isNewPolyCurve) myData.startOfPath = {...myData.cursorPos};
-  emit(svgToOpenStratSpace(myData.cursorPos.x, "x")+ " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
-  myData.isNewPolyCurve = false;
+  emitLineSeg(myData.cursorPos.x, myData.cursorPos.y);
 }
 
 function getLineTo(){
   match("l");
-  emit("LineSeg(");
   const dx = +getNumber();
   const dy = +getNumber();
   if (myData.currentCommand == "L") myData.cursorPos = {x: 0, y: 0};
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
-  emit(svgToOpenStratSpace(myData.cursorPos.x, "x")+ " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
+  emitLineSeg(myData.cursorPos.x, myData.cursorPos.y);
 }
 
 function getClosePath(){
   match("z");
   emit("LineSeg(" + svgToOpenStratSpace(myData.startOfPath.x, "x") + " vv " + svgToOpenStratSpace(myData.startOfPath.y, "y") + "))");
-  if (myData.fillColor[1] == 'x') emit(".fill(Colour("+myData.fillColor+"))\r"); //no css level 4 colour names contain an x so it must be hex
+  if (myData.fillColor[1] == 'x') emit(".fill(Colour("+myData.fillColor+"))\r\r"); //no css level 4 colour names contain an x so it must be hex
   else emit(".fill("+myData.fillColor+")\r");
   myData.cursorPos = {...myData.startOfPath};
-  myData.isNewPolyCurve = true;
-  myData.lastControlPoint = null;
 }
 
-function getBezierCurve(){
+function getCurveTo(){
   match("c");
-  emit("BezierSeg(");
   const dx1 = +getNumber();
   const dy1 = +getNumber();
   const dx2 = +getNumber();
@@ -133,30 +160,45 @@ function getBezierCurve(){
   const dx = +getNumber();
   const dy = +getNumber();
   if (myData.currentCommand == "C") myData.cursorPos = {x: 0, y: 0};
-  emit( svgToOpenStratSpace(dx1 + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy1 + myData.cursorPos.y, "y") + ", "
-      + svgToOpenStratSpace(dx2 + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy2 + myData.cursorPos.y, "y") + ", "
-      + svgToOpenStratSpace(dx + myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(dy + myData.cursorPos.y, "y") + "), ");
-  myData.lastControlPoint = {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y};
+  emitBezierSeg({x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y},
+                {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y},
+                {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
+  myData.lastControlPoint = {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y};
+}
+
+function getSmoothCurveTo(){
+  match("s");
+  const dx1 = reflectionOfLastControlPoint().x;
+  const dy1 = reflectionOfLastControlPoint().y;
+  const dx2 = +getNumber();
+  const dy2 = +getNumber();
+  const dx = +getNumber();
+  const dy = +getNumber();
+  if (myData.currentCommand == "S") myData.cursorPos = {x: 0, y: 0};
+  emitBezierSeg({x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y},
+                {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y},
+                {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
+  myData.cursorPos.x = myData.cursorPos.x + dx;
+  myData.cursorPos.y = myData.cursorPos.y + dy;
+  myData.lastControlPoint = {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y};
 }
 
 function getVertical(){
   match("v");
-  emit("LineSeg(");
   const dy = +getNumber();
   if (myData.currentCommand == "V") myData.cursorPos = {x: 0, y: 0};
   myData.cursorPos.y = myData.cursorPos.y + dy;
-  emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
+  emitLineSeg(myData.cursorPos.x, myData.cursorPos.y);
 }
 
 function getHorizontal(){
   match("h");
-  emit("LineSeg(");
   const dx = +getNumber();
   if (myData.currentCommand == "H") myData.cursorPos = {x: 0, y: 0};
   myData.cursorPos.x = myData.cursorPos.x + dx;
-  emit( svgToOpenStratSpace(myData.cursorPos.x, "x") + " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
+  emitLineSeg(myData.cursorPos.x, myData.cursorPos.y);
 }
 
 function getNumber(){
@@ -167,7 +209,7 @@ function getNumber(){
   while (isDigite(myData.look)){
     if (myData.look == ".") dotCount += 1;
     if (dotCount > 1) break;
-    if (myData.look.toLowerCase() == "e"){ // this doesn't appear in the spec but IS found in the wild
+    if (myData.look.toLowerCase() == "e"){ // exponents don't appear in the spec but ARE found in the wild
       ret += "e";
       read();
       if (myData.look == "-"){ // have to do this check here as two numbers can be expressed as 12.1-3.9 ie 12.1 & -3.9
@@ -186,18 +228,15 @@ function getNumber(){
 
 function svgToOpenStratSpace(number, axis){ /// sort out float rounding errors and map to openstrat flag space
   if (axis == 'x') {
-//    number = (number - myData.svgWidth / 2) / myData.svgHeight;
+   number = (number - myData.svgWidth / 2) / myData.svgHeight;
   } else if (axis == 'y') {
-//    number = -(number / myData.svgHeight - 0.5)
+   number = -(number / myData.svgHeight - 0.5)
   }
   return +parseFloat(number).toPrecision(4);
 }
 
 function reflectionOfLastControlPoint(){  // For S/s and T/t commands 1st control point = reflection of last segments control point relative to the current point.
-  if (myData.lastControlPoint == null) {
-    warning("reflectionOfLastControlPoint requires last segment to be bezier");
-    expected("last segment to be bezier");
-  }
+  if (myData.lastControlPoint == null)  myData.lastControlPoint = {...myData.cursorPos};
   return {x: 2*myData.cursorPos.x - myData.lastControlPoint.x, y: 2*myData.cursorPos.y - myData.lastControlPoint.y};
 }
 
@@ -237,7 +276,7 @@ function expected(str){
   document.getElementById("svgPath").selectionStart = myData.ptr-1;
   document.getElementById("svgPath").selectionEnd = myData.ptr;
   document.getElementById("openStratPolyCurve").value = myData.result;
-  let errorStr = str + " expected: pos=" + myData.ptr;
+  let errorStr = "ERROR: " + str + " expected: pos=" + myData.ptr;
   document.getElementById("errors").value += errorStr;
   throw errorStr;
 }
