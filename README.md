@@ -7,18 +7,12 @@ Currently working for most svg-path commands - though non circular Arcs may not 
 
 TODO:
 * Tidy code
-  * ~~Separate js from html~~
-  * ~~Pollute Global with only one var~~
-* ~~Calculate excat svg offset from origin~~
-* ~~Make a Shape for each z/Z command in the svg-path~~
-* ~~Add an option to scale the converted svg-path~~
 * Remove duplicated commands (when an svg has too much detail the rounding .toPrecision can produce duplicates) - Optional
-* Complete full set of relative commands (~~s, q, t~~) (except a - Arcs) 
-* Add all absolute commands (the Capitols: ~~M L H V Z C S Q T~~) (except A - Arcs) 
+* Complete full set of relative commands  a - A - Arcs
 * Consider converting Arcs to Polyline or Beziers
 * Consider parsing an svg file
 * Consider option for converting an svg file, which is a flag, into a openstrat Flag
-* Turn openStratJsUtils.js development helper into ~~bookmarklets~~ and/or integrate into deb.scala
+* Turn openStratJsUtils.js development helper into bookmarklets and/or integrate into deb.scala
 <details>
     <summary>
         <b></b>
