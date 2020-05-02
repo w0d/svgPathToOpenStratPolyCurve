@@ -2,10 +2,13 @@
 //       flag/booleans must be interpolated as fractions between zero and one, with any non-zero value considered to be a value of one/true. 
 //       handle viewport rather than just width & height
 //       handle the + sign
+// dont need last connect line to close polygon
+//line length limit 150
 
 let myData = {};
 
 function svgPathToOpenStratPolyCurve(){
+  myData.isDebug = true;
   document.getElementById("openStratPolyCurve").value = '';
   document.getElementById("errors").value = '';  //**ToReview**// should? report errors and return shape up to last segment before error
   myData.svgPath = document.getElementById("svgPath").value;
@@ -18,7 +21,7 @@ function svgPathToOpenStratPolyCurve(){
   myData.currentCommand = null;
   myData.isNewPolyCurve = true;  //PolyCurve does not support sub-paths, so we will create a new PolyCurve for each sub-path
   myData.startOfPath = {...myData.cursorPos}; //this is repeated for each sub-path (in the z command)
-  myData.cursorPos = {x: 0, y: 0};  //this also acts as the last point at the start of processing the current command
+  myData.cursorPos = {x: 0, y: 0};
   myData.lastCubicControlPoint = null;
   myData.lastQuadraticControlPoint = null;
   if (myData.svgPath == "none") return; //as with d='' defines a valid empty path which disables rendering of the path
@@ -95,9 +98,12 @@ function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H,
       break;
     case 'q':
     case 'Q':
-      getQuadraticTo()
+      getQuadraticTo();
+      break;
     case 't':
     case 'T':
+      getSmoothQuadraticTo();
+      break;
     case 'a':
     case 'A':
       warning("Command not implemented: '"+myData.look+"'");
@@ -107,8 +113,8 @@ function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H,
   }
   if ("Z" == myData.currentCommand.toUpperCase()) myData.isNewPolyCurve = true;
   else myData.isNewPolyCurve = false;
-  if ("CcSs".indexOf(myData.currentCommand) != -1) myData.lastCubicControlPoint = null;
-  if ("QqTt".indexOf(myData.currentCommand) != -1) myData.lastQuadraticControlPoint = null;
+  if ("CcSs".indexOf(myData.currentCommand) == -1) myData.lastCubicControlPoint = null;
+  if ("QqTt".indexOf(myData.currentCommand) == -1) myData.lastQuadraticControlPoint = null;
 }
 
 function emitLineSeg(x, y){
@@ -156,32 +162,40 @@ function getClosePath(){
 
 function getQuadraticTo(){
   match("q");
-  const dx1 = +getNumber();
+  const dx1 = +getNumber();  //**SHOULD**// add cursor pos ere
   const dy1 = +getNumber();
   const dx = +getNumber();
   const dy = +getNumber();
-  if (myData.currentCommand == "Q") myData.cursorPos = {x: 0, y: 0};
-  emitBezierSeg({x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y},
-                {x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y},
+
+  //get equivalent cubic control points from a quadratic 
+  const ctrlPt1 = {x: (myData.cursorPos.x + 2 * dx1)/3.0, y: (myData.cursorPos.y + 2 * dy1)/3.0};
+  if (myData.currentCommand == "Q")  myData.cursorPos = {x: 0, y: 0};
+  const ctrlPt2 = {x: (dx + myData.cursorPos.x + 2 * dx1)/3.0, y:(dy + myData.cursorPos.y + 2 * dy1)/3.0};
+  emitBezierSeg({x: ctrlPt1.x, y: ctrlPt1.y},
+                {x: ctrlPt2.x, y: ctrlPt2.y},
                 {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
+  myData.lastQuadraticControlPoint = {x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y};
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
-  myData.lastQuadraticControlPoint = {x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y};
 }
 
-function getSmoothQuadraticCurveTo(){
+function getSmoothQuadraticTo(){
   match("t");
-  const dx1 = reflectionOfLastControlPoint("quadratic").x;
+  const dx1 = reflectionOfLastControlPoint("quadratic").x; 
   const dy1 = reflectionOfLastControlPoint("quadratic").y;
   const dx = +getNumber();
   const dy = +getNumber();
-  if (myData.currentCommand == "T") myData.cursorPos = {x: 0, y: 0};
-  emitBezierSeg({x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y},
-                {x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y},
+
+  //get equivalent cubic control points from a quadratic 
+  const ctrlPt1 = {x: (myData.cursorPos.x + 2 * dx1)/3.0, y: (myData.cursorPos.y + 2 * dy1)/3.0};
+  if (myData.currentCommand == "T")   myData.cursorPos = {x: 0, y: 0};
+  const ctrlPt2 = {x: (dx + myData.cursorPos.x + 2 * dx1)/3.0, y:(dy + myData.cursorPos.y + 2 * dy1)/3.0};
+  emitBezierSeg({x: ctrlPt1.x, y: ctrlPt1.y},
+                {x: ctrlPt2.x, y: ctrlPt2.y},
                 {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
+  myData.lastQuadraticControlPoint = {x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y};
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
-  myData.lastQuadraticControlPoint = {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y};
 }
 
 function getCurveTo(){
@@ -196,9 +210,9 @@ function getCurveTo(){
   emitBezierSeg({x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y},
                 {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y},
                 {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
+  myData.lastCubicControlPoint = {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y};
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
-  myData.lastCubicControlPoint = {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y};
 }
 
 function getSmoothCurveTo(){
@@ -213,9 +227,9 @@ function getSmoothCurveTo(){
   emitBezierSeg({x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y},
                 {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y},
                 {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
+  myData.lastCubicControlPoint = {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y};
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
-  myData.lastCubicControlPoint = {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y};
 }
 
 function getVertical(){
@@ -260,19 +274,21 @@ function getNumber(){
 }
 
 function svgToOpenStratSpace(number, axis){ /// sort out float rounding errors and map to openstrat flag space
-  if (axis == 'x') {
-   number = (number - myData.svgWidth / 2) / myData.svgHeight;
-  } else if (axis == 'y') {
-   number = -(number / myData.svgHeight - 0.5)
+  if (!myData.isDebug){
+    if (axis == 'x') {
+     number = (number - myData.svgWidth / 2) / myData.svgHeight;
+    } else if (axis == 'y') {
+     number = -(number / myData.svgHeight - 0.5)
+    }
   }
   return +parseFloat(number).toPrecision(4);
 }
 
-function reflectionOfLastControlPoint(whichType){  // For S/s and T/t commands 1st control point = reflection of last segments control point relative to the current point.
+function reflectionOfLastControlPoint(whichType, aboutThisPoint){  // For S/s and T/t commands 1st control point = reflection of last segments control point relative to the current point.
   if (whichType == 'cubic'){
     if (myData.lastCubicControlPoint == null)  myData.lastCubicControlPoint = {...myData.cursorPos};
     return {x: 2*myData.cursorPos.x - myData.lastCubicControlPoint.x, y: 2*myData.cursorPos.y - myData.lastCubicControlPoint.y};
-  } else {
+  } else if (whichType == 'quadratic'){
     if (myData.lastQuadraticControlPoint == null)  myData.lastQuadraticControlPoint = {...myData.cursorPos};
     return {x: 2*myData.cursorPos.x - myData.lastQuadraticControlPoint.x, y: 2*myData.cursorPos.y - myData.lastQuadraticControlPoint.y};
   }
