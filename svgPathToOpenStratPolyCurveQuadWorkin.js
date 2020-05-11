@@ -106,9 +106,10 @@ function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H,
       break;
     case 'a':
     case 'A':
-      getEllipticalArc();
+      warning("Command not implemented: '"+myData.look+"'");
+      expected("Implemented command");
       break;
-    default: expected(myData.look+" ? Command or number");
+    default: expected(myData.look+"?? Command or number");
   }
   if ("Z" == myData.currentCommand.toUpperCase()) myData.isNewPolyCurve = true;
   else myData.isNewPolyCurve = false;
@@ -118,15 +119,9 @@ function getCommand(){     //moveTo(M, m), closePath(Z, z) lineTo(L, l, V, v, H,
 
 function emitLineSeg(x, y){
   emit("LineSeg(");
-  emit(svgToOpenStratSpace(x, "x")+ " vv " + svgToOpenStratSpace(y, "y") + "), ");
+  emit(svgToOpenStratSpace(x, "x")+ " vv " + svgToOpenStratSpace(myData.cursorPos.y, "y") + "), ");
 }
 
-function emitArcSeg(centrePoint, endPoint){
-  emit("ArcSeg(");
-  emit(svgToOpenStratSpace(centrePoint.x, "x")+ " vv " + svgToOpenStratSpace(centrePoint.y, "y") + ", "
-      + svgToOpenStratSpace(endPoint.x, "x")+ " vv " + svgToOpenStratSpace(endPoint.y, "y") + "), " );
-}
-//ArcSeg(pCen: Vec2, pEnd: Vec2)
 function emitBezierSeg(controlPoint1, controlPoint2, endPoint){
   emit("BezierSeg(");
   emit( svgToOpenStratSpace(controlPoint1.x, "x") + " vv " + svgToOpenStratSpace(controlPoint1.y, "y") + ", "
@@ -165,50 +160,6 @@ function getClosePath(){
   myData.cursorPos = {...myData.startOfPath};
 }
 
-function cross(A,B){
-  if (A.length == 2) A[2] = 0;
-  if (B.length == 2) B[2] = 0;
-  ret = [];
-  ret[0] = A[1]*B[2] - A[2]*B[1];
-  ret[1] = A[2]*B[0] - A[0]*B[2];
-  ret[2] = A[0]*B[1] - A[1]*B[0];
-  return ret;
-}
-
-function mag(vec){
-  temp = 0;
-  vec.forEach(i => temp += i*i);
-  return Math.sqrt(temp);
-}
-
-function getEllipticalArc(){
-  match("a");
-  const rx = +getNumber();
-  const ry = +getNumber();
-  const xAxisRotation = +getNumber();
-  const largeArcFlag = getFlag();
-  const sweepFlag = getFlag();
-  const dx = +getNumber();
-  const dy = +getNumber();
-
-// A = Current Point, B = End Point, r = radius, v = (B-A)/2, n = (AxB)x(B-A)
-//center of circle = (B-A)/2 +- Root( (r2 - |v|2) /  |n|2 )*n
-//let C = B-A
-//center of circle = C/2 +- Root( (r2 - |C/2|2) /  |(AxB)xC|2 )*(AxB)xC
-  const A = [myData.cursorPos.x, myData.cursorPos.y];
-  if (myData.currentCommand == "A")  myData.cursorPos = {x: 0, y: 0};
-  const B = [myData.cursorPos.x + dx, myData.cursorPos.y + dy];
-  const C = [B[0]-A[0], B[1]-A[1]];
-  const AxB = cross(A, B);
-  const n = cross(AxB, C);
-  const root = Math.sqrt((rx*rx - Math.pow(mag([C[0]/2, C[1]/2]),2))/ Math.pow(mag(n), 2));
-  const flagCentre = {x: myData.cursorPos.x + C[0]/2 - root*n[0], y: myData.cursorPos.y + C[1]/2 - root*n[1]};
-  
-  myData.cursorPos.x = myData.cursorPos.x + dx;
-  myData.cursorPos.y = myData.cursorPos.y + dy;
-  emitArcSeg(flagCentre, myData.cursorPos);
-}
-
 function getQuadraticTo(){
   match("q");
   const dx1 = +getNumber();  //**SHOULD**// add cursor pos ere
@@ -217,15 +168,26 @@ function getQuadraticTo(){
   const dy = +getNumber();
 
   //get equivalent cubic control points from a quadratic 
-  const ctrlPt1 = {x: (myData.cursorPos.x + 2 * dx1)/3.0, y: (myData.cursorPos.y + 2 * dy1)/3.0};
-  if (myData.currentCommand == "Q")  myData.cursorPos = {x: 0, y: 0};
-  const ctrlPt2 = {x: (dx + myData.cursorPos.x + 2 * dx1)/3.0, y:(dy + myData.cursorPos.y + 2 * dy1)/3.0};
-  emitBezierSeg({x: ctrlPt1.x, y: ctrlPt1.y},
-                {x: ctrlPt2.x, y: ctrlPt2.y},
-                {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
-  myData.lastQuadraticControlPoint = {x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y};
-  myData.cursorPos.x = myData.cursorPos.x + dx;
-  myData.cursorPos.y = myData.cursorPos.y + dy;
+  if (myData.currentCommand == "Q") {
+    const ctrlPt1 = {x: (myData.cursorPos.x + 2 * dx1)/3.0, y: (myData.cursorPos.y + 2 * dy1)/3.0};
+    const ctrlPt2 = {x: (dx + 2 * dx1)/3.0, y:(dy + 2 * dy1)/3.0};
+    emitBezierSeg({x: ctrlPt1.x, y: ctrlPt1.y},
+                  {x: ctrlPt2.x, y: ctrlPt2.y},
+                  {x: dx,  y: dy});
+    myData.lastQuadraticControlPoint = {x: dx1,  y: dy1};//{x: dx1,  y: dy1};...ctrlPt2
+    myData.cursorPos.x = dx;
+    myData.cursorPos.y = dy;
+  } else {
+    const ctrlPt1 = {x: (myData.cursorPos.x + 2 * dx1)/3.0, y: (myData.cursorPos.y + 2 * dy1)/3.0};
+    const ctrlPt2 = {x: (dx + myData.cursorPos.x + 2 * dx1)/3.0, y:(dy + myData.cursorPos.y + 2 * dy1)/3.0};
+    myData.cursorPos = {x: 0, y: 0};
+    emitBezierSeg({x: ctrlPt1.x, y: ctrlPt1.y},
+                  {x: ctrlPt2.x, y: ctrlPt2.y},
+                  {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
+    myData.lastQuadraticControlPoint = {...ctrlPt2};//{x: dx1 + myData.cursorPos.x,  y: dy1 + myData.cursorPos.y};
+    myData.cursorPos.x = myData.cursorPos.x + dx;
+    myData.cursorPos.y = myData.cursorPos.y + dy;
+  }
 }
 
 function getSmoothQuadraticTo(){
@@ -235,16 +197,27 @@ function getSmoothQuadraticTo(){
   const dx = +getNumber();
   const dy = +getNumber();
 
-  //get equivalent cubic control points from a quadratic 
-  const ctrlPt1 = {x: (myData.cursorPos.x + 2 * dx1)/3.0, y: (myData.cursorPos.y + 2 * dy1)/3.0};
-  if (myData.currentCommand == "T") myData.cursorPos = {x: 0, y: 0};
-  const ctrlPt2 = {x: (dx + myData.cursorPos.x + 2 * dx1)/3.0, y:(dy + myData.cursorPos.y + 2 * dy1)/3.0};
-  emitBezierSeg({x: ctrlPt1.x, y: ctrlPt1.y},
-                {x: ctrlPt2.x, y: ctrlPt2.y},
-                {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
-  myData.lastQuadraticControlPoint = {x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y};
+  if (myData.currentCommand == "T") {
+    //get equivalent cubic control points from a quadratic 
+    const ctrlPt1 = {x: (myData.cursorPos.x + 2 * dx1)/3.0, y: (myData.cursorPos.y + 2 * dy1)/3.0};
+    const ctrlPt2 = {x: (dx + 2 * dx1)/3.0, y:(dy + 2 * dy1)/3.0};
+    emitBezierSeg({x: ctrlPt1.x, y: ctrlPt1.y},
+                  {x: ctrlPt2.x, y: ctrlPt2.y},
+                  {x: dx,  y: dy});
+    myData.lastQuadraticControlPoint = {x: dx1, y: dy1};
+    myData.cursorPos.x = dx;
+    myData.cursorPos.y = dy;
+  } else {
+    //get equivalent cubic control points from a quadratic 
+    const ctrlPt1 = {x: dx1, y: dy1};
+    const ctrlPt2 = {x: (dx + myData.cursorPos.x + 2 * (dx1 - myData.cursorPos.x))/3.0, y:(dy + myData.cursorPos.y + 2 * (dy1 - myData.cursorPos.y))/3.0};
+    emitBezierSeg({x: ctrlPt1.x, y: ctrlPt1.y},
+                  {x: ctrlPt2.x, y: ctrlPt2.y},
+                  {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
+    myData.lastQuadraticControlPoint = {...ctrlPt2};
   myData.cursorPos.x = myData.cursorPos.x + dx;
   myData.cursorPos.y = myData.cursorPos.y + dy;
+  }
 }
 
 function getCurveTo(){
@@ -273,7 +246,7 @@ function getSmoothCurveTo(){
   const dx = +getNumber();
   const dy = +getNumber();
   if (myData.currentCommand == "S") myData.cursorPos = {x: 0, y: 0};
-  emitBezierSeg({x: dx1 + myData.cursorPos.x, y: dy1 + myData.cursorPos.y},
+  emitBezierSeg({x: dx1, y: dy1},
                 {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y},
                 {x: dx + myData.cursorPos.x,  y: dy + myData.cursorPos.y});
   myData.lastCubicControlPoint = {x: dx2 + myData.cursorPos.x, y: dy2 + myData.cursorPos.y};
@@ -295,14 +268,6 @@ function getHorizontal(){
   if (myData.currentCommand == "H") myData.cursorPos = {x: 0, y: 0};
   myData.cursorPos.x = myData.cursorPos.x + dx;
   emitLineSeg(myData.cursorPos.x, myData.cursorPos.y);
-}
-
-function getFlag(){
-  if (!isFlag(myData.look)) expected("Flag");
-  const ret = myData.look;
-  read();
-  eat(",");
-  return +ret;
 }
 
 function getNumber(){
@@ -356,7 +321,6 @@ function consumeWhiteSpace(){
 }
 
 function eat(str){
-  consumeWhiteSpace();
   if (myData.look == str) read();
   consumeWhiteSpace();
 }
@@ -391,10 +355,6 @@ function expected(str){
   let errorStr = "ERROR: " + str + " expected: pos=" + myData.ptr;
   document.getElementById("errors").value += errorStr;
   throw errorStr;
-}
-
-function isFlag(str){ //recognize a decimal digit
-  return ~"01".indexOf(str);
 }
 
 function isDigit(str){ //recognize a decimal digit
