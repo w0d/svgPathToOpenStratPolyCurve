@@ -8,9 +8,10 @@
 let myData = {};
 
 function svgPathToOpenStratPolyCurve(){
-  myData.isDebug = true;
+  myData.isDebug = document.getElementById("debug").checked;
   document.getElementById("openStratPolyCurve").value = '';
   document.getElementById("errors").value = '';  //**ToReview**// should? report errors and return shape up to last segment before error
+  myData.precision = +document.getElementById("precision").value;
   myData.svgPath = document.getElementById("svgPath").value;
   myData.svgWidth = +document.getElementById("svgWidth").value;
   myData.svgHeight = +document.getElementById("svgHeight").value;
@@ -33,8 +34,8 @@ function translateVector(){
   myData.svgWidth = +document.getElementById("svgWidth").value;
   myData.svgHeight = +document.getElementById("svgHeight").value;
   pointToTranslate = JSON.parse('{"x":'+ document.getElementById("svgCoordx").value + ', "y":' + document.getElementById("svgCoordy").value +'}');
-  pointToTranslate.x = +parseFloat(pointToTranslate.x/myData.svgHeight).toPrecision(4);
-  pointToTranslate.y = +parseFloat(-pointToTranslate.y/myData.svgHeight).toPrecision(4);
+  pointToTranslate.x = +parseFloat(pointToTranslate.x/myData.svgHeight).toPrecision(myData.precision);
+  pointToTranslate.y = +parseFloat(-pointToTranslate.y/myData.svgHeight).toPrecision(myData.precision);
   document.getElementById("Vec2").value = pointToTranslate.x + " vv " + pointToTranslate.y
 }
 
@@ -338,7 +339,7 @@ function svgToOpenStratSpace(number, axis){ /// sort out float rounding errors a
      number = -(number / myData.svgHeight - 0.5)
     }
   }
-  return +parseFloat(number).toPrecision(4);
+  return +parseFloat(number).toPrecision(myData.precision);
 }
 
 function reflectionOfLastControlPoint(whichType, aboutThisPoint){  // For S/s and T/t commands 1st control point = reflection of last segments control point relative to the current point.
