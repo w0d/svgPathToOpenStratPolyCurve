@@ -1,42 +1,100 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <title>SVG Path To OpenStrat PolyCurve</title>
     <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
     <meta http-equiv="Pragma" content="no-cache"/>
     <meta http-equiv="Expires" content="0"/>
-    <style>
-      body { margin: 0px; /*overflow: hidden;*/ }
-    </style>
+
+    <link rel="stylesheet" href="css/pure-min.css">
+    <link rel="stylesheet" href="css/grids-responsive-min.css">
+    
     <script type="application/javascript" src="svgPathToOpenStratPolyCurve.js"></script>
-<!--    <script type="application/javascript" src="openStratJsUtils.js"></script>--> 
+<!--
+    <link rel="stylesheet" href="css/custom.css">
+    <script type="application/javascript" src="openStratJsUtils.js"></script>
+--> 
   </head>
   <body>
     <h3>Convert SVG path to OpenStrat PolyCurve</h3>
-    <label labelFor="svgWidth">Svg Width</label><input type="text" id="svgWidth" value='1200' size="5">
-    <label labelFor="svgHeight"> Height</label><input type="text" id="svgHeight" value='600' size="5">
-    <label labelFor="fillColor"> FillColor Name | Hex</label><input type="text" id="fillColor" value='0xFF123456' size="20">
-    <br>
-    <label for="svgPath">svgPath: d=</label>
-    <textarea id='svgPath' rows='15' cols="80">m 10,10 c 20,20 30,30 40,40 l 60,60, v 70 h 80 z</textarea>
-    <br>
-    <label for="openStratPolyCurve">openStratPolyCurve:</label>
-    <textarea id='openStratPolyCurve' rows='15' cols="80"></textarea>
-    <br>
-    <button type="button" onclick="svgPathToOpenStratPolyCurve();">Process svgPath</button>
-    <br>
-    <label for="errors">Errors</label>
-    <textarea id='errors' rows='5' cols="65"></textarea>
-    <br>
-    <label labelFor="svgCoordx">svg x=</label><input type="text" id="svgCoordx" value='0' size='8'>
-    <label labelFor="svgCoordy"> y=</label><input type="text" id="svgCoordy" value='0' size='8'>
-    <button type="button" onclick="translateVector();">Map svg point to openstrat Vec2</button>
-    <label labelFor="Vec2">Vec2:</label><input type="text" id="Vec2" value='' size='20'>
-    <br>
-    <label labelFor="precision">Precision</label><input type="text" id="precision" value='4' size="3">
-    <br>
-    <label labelFor="debug">Debug (dont translate to openstrat space)</label><input type="checkbox" id="debug" value='4' size="3">
+    <form class="pure-form pure-form-stacked">
+      <fieldset>
+        <legend>Enter SVG Details</legend>
+        <div class="pure-g">
+          <div class="pure-u-1-2 pure-u-md-1-8">
+            <label for="svgWidth">Width</label>
+            <input id="svgWidth" class="pure-u-23-24" type="text" placeholder="800"/>
+          </div>
+          <div class="pure-u-1-2 pure-u-md-1-8">
+            <label for="svgHeight">Height</label>
+            <input id="svgHeight" class="pure-u-23-24" type="text" placeholder="600"/>
+          </div>
+          <div class="pure-u-1 pure-u-md-1-4">
+            <label for="fillColor">Color (css name | hex)</label>
+            <input id="fillColor" class="pure-u-23-24" type="text" placeholder="0xFF123456"/>
+          </div>
+          <div class="pure-u-1 pure-u-md-13-24">
+            <label for="svgPath">SVG Path: d=</label>
+            <textarea id='svgPath' class="pure-u-23-24" rows="5" placeholder="m 10,10 c 20,20 30,30 40,40 l 60,60, v 70 h 80 z"></textarea>
+          </div>
+        </div>
+        <button class="pure-button pure-button-primary" type="button" onclick="svgPathToOpenStratPolyCurve();">Process SVG Path</button>
+      </fieldset>
+    </form>
+    <form class="pure-form pure-form-stacked">
+      <fieldset>
+        <legend>Results</legend>
+        <div class="pure-g">
+          <div class="pure-u-1 pure-u-md-1-2">
+            <label for="openStratPolyCurve">openstrat PolyCurve</label>
+            <textarea id='openStratPolyCurve' class="pure-u-23-24" rows="5"></textarea>
+          </div>
+          <div class="pure-u-1 pure-u-md-1-2">
+            <label for="errors">Errors</label>
+            <textarea id='errors' class="pure-u-23-24" rows="5"></textarea>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+    <form class="pure-form pure-form-stacked">
+      <fieldset>
+        <legend>Map SVG Coordinate to OpenStrat Vec2</legend>
+        <div class="pure-g">
+          <div class="pure-u-1 pure-u-md-1-8">
+            <label labelFor="svgCoordx">x</label>
+            <input type="text" id="svgCoordx" class="pure-u-23-24" placeholder="0">
+          </div>
+          <div class="pure-u-1 pure-u-md-1-8">
+            <label labelFor="svgCoordy">y</label>
+            <input type="text" id="svgCoordy" class="pure-u-23-24" placeholder="0">
+          </div>
+          <div class="pure-u-1 pure-u-md-1-12">
+            <label>&nbsp;</label>
+            <div><button class="pure-button pure-button-primary" type="button" onclick="translateVector();">Map</button></div>
+          </div>
+          <div class="pure-u-1 pure-u-md-1-4">
+            <label labelFor="Vec2">Vec2:</label>
+            <input type="text" id="Vec2" class="pure-u-23-24">
+          </div>
+        </div>
+      </fieldset>
+    </form>
+    <form class="pure-form pure-form-stacked">
+      <fieldset>
+        <legend>Configuration</legend>
+        <div class="pure-g">
+          <div class="pure-u-1 pure-u-md-1-8">
+            <label labelFor="precision">Precision</label>
+            <input type="text" id="precision" class="pure-u-23-24" placeholder="4">
+          </div>
+          <div class="pure-u-1 pure-u-md-1-8">
+            <label labelFor="debug">Debug</label>
+            <input type="checkbox" id="debug" class="pure-u-23-24">
+          </div>
+        </div>
+      </fieldset>
+    </form>
   </body>
 </html>
