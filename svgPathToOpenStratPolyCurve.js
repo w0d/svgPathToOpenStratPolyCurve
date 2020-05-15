@@ -7,15 +7,20 @@
 
 let myData = {};
 
+function getElemIdsPropElsePlaceholder(id, prop){
+  const element = document.getElementById(id)
+  return element[prop] ? element[prop] : element.placeholder;
+}
+
 function svgPathToOpenStratPolyCurve(){
   myData.isDebug = document.getElementById("debug").checked;
   document.getElementById("openStratPolyCurve").value = '';
   document.getElementById("errors").value = '';  //**ToReview**// should? report errors and return shape up to last segment before error
-  myData.precision = +document.getElementById("precision").value;
-  myData.svgPath = document.getElementById("svgPath").value;
-  myData.svgWidth = +document.getElementById("svgWidth").value;
-  myData.svgHeight = +document.getElementById("svgHeight").value;
-  myData.fillColor = document.getElementById("fillColor").value;
+  myData.precision = +getElemIdsPropElsePlaceholder("precision", "value");
+  myData.svgPath = getElemIdsPropElsePlaceholder("svgPath", "value");
+  myData.svgWidth = +getElemIdsPropElsePlaceholder("svgWidth", "value");
+  myData.svgHeight = +getElemIdsPropElsePlaceholder("svgHeight", "value");
+  myData.fillColor = getElemIdsPropElsePlaceholder("fillColor", "value");
   myData.result = '';
   myData.ptr = 0;
   myData.look = '';
@@ -31,9 +36,12 @@ function svgPathToOpenStratPolyCurve(){
 }
 
 function translateVector(){
-  myData.svgWidth = +document.getElementById("svgWidth").value;
-  myData.svgHeight = +document.getElementById("svgHeight").value;
-  pointToTranslate = JSON.parse('{"x":'+ document.getElementById("svgCoordx").value + ', "y":' + document.getElementById("svgCoordy").value +'}');
+  const svgX = getElemIdsPropElsePlaceholder("svgCoordx", "value");
+  const svgY = getElemIdsPropElsePlaceholder("svgCoordy", "value");
+  myData.precision = +getElemIdsPropElsePlaceholder("precision", "value");
+  myData.svgWidth = +getElemIdsPropElsePlaceholder("svgWidth", "value");
+  myData.svgHeight = +getElemIdsPropElsePlaceholder("svgHeight", "value");
+  pointToTranslate = JSON.parse('{"x":'+ svgX + ', "y":' + svgY +'}');
   pointToTranslate.x = +parseFloat(pointToTranslate.x/myData.svgHeight).toPrecision(myData.precision);
   pointToTranslate.y = +parseFloat(-pointToTranslate.y/myData.svgHeight).toPrecision(myData.precision);
   document.getElementById("Vec2").value = pointToTranslate.x + " vv " + pointToTranslate.y
