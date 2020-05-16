@@ -1,7 +1,7 @@
 # svgPathToOpenStratPolyCurve
 This is a utility for the [openstrat](https://github.com/Rich2/openstrat) graphic/strategy library
 
-Html App to convert a SVG path to an openstrat PolyCurve
+To convert a SVG path to an openstrat PolyCurve
 
 Try it out [here](https://w0d.github.io/svgPathToOpenStratPolyCurve/)
 
