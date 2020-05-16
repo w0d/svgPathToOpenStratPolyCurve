@@ -9,7 +9,7 @@ Try it out [here](https://w0d.github.io/svgPathToOpenStratPolyCurve/)
 
 <details>TODO:
     <summary>
-* Tidy code
+<b>* Tidy code
 * Remove duplicated commands (when an svg has too much detail the rounding .toPrecision can produce duplicates) - Optional
 * Complete full set of commands  a - A - Arcs
 * Consider converting Arcs to Polyline or Beziers
