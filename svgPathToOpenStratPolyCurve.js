@@ -7,20 +7,21 @@
 
 let myData = {};
 
-function getElemIdsPropElsePlaceholder(id, prop){
+function getUserInputById(id, prop){
+  //if no user input then get placeholder value (or default - for checkboxes)
   const element = document.getElementById(id)
   return element[prop] ? element[prop] : element.placeholder;
 }
 
 function svgPathToOpenStratPolyCurve(){
-  myData.isDebug = document.getElementById("debug").checked;
+  myData.isDebug = getUserInputById("debug", "checked");
   document.getElementById("openStratPolyCurve").value = '';
   document.getElementById("errors").value = '';  //**ToReview**// should? report errors and return shape up to last segment before error
-  myData.precision = +getElemIdsPropElsePlaceholder("precision", "value");
-  myData.svgPath = getElemIdsPropElsePlaceholder("svgPath", "value");
-  myData.svgWidth = +getElemIdsPropElsePlaceholder("svgWidth", "value");
-  myData.svgHeight = +getElemIdsPropElsePlaceholder("svgHeight", "value");
-  myData.fillColor = getElemIdsPropElsePlaceholder("fillColor", "value");
+  myData.precision = +getUserInputById("precision", "value");
+  myData.svgPath = getUserInputById("svgPath", "value");
+  myData.svgWidth = +getUserInputById("svgWidth", "value");
+  myData.svgHeight = +getUserInputById("svgHeight", "value");
+  myData.fillColor = getUserInputById("fillColor", "value");
   myData.result = '';
   myData.ptr = 0;
   myData.look = '';
@@ -36,11 +37,11 @@ function svgPathToOpenStratPolyCurve(){
 }
 
 function translateVector(){
-  const svgX = getElemIdsPropElsePlaceholder("svgCoordx", "value");
-  const svgY = getElemIdsPropElsePlaceholder("svgCoordy", "value");
-  myData.precision = +getElemIdsPropElsePlaceholder("precision", "value");
-  myData.svgWidth = +getElemIdsPropElsePlaceholder("svgWidth", "value");
-  myData.svgHeight = +getElemIdsPropElsePlaceholder("svgHeight", "value");
+  const svgX = getUserInputById("svgCoordx", "value");
+  const svgY = getUserInputById("svgCoordy", "value");
+  myData.precision = +getUserInputById("precision", "value");
+  myData.svgWidth = +getUserInputById("svgWidth", "value");
+  myData.svgHeight = +getUserInputById("svgHeight", "value");
   pointToTranslate = JSON.parse('{"x":'+ svgX + ', "y":' + svgY +'}');
   pointToTranslate.x = +parseFloat(pointToTranslate.x/myData.svgHeight).toPrecision(myData.precision);
   pointToTranslate.y = +parseFloat(-pointToTranslate.y/myData.svgHeight).toPrecision(myData.precision);
