@@ -7,16 +7,15 @@ Currently working for most svg-path commands (non circular Arcs may not be imple
 
 Try it out [here](https://w0d.github.io/svgPathToOpenStratPolyCurve/)
 
-<details>TODO:
+<details><b>TODO:</b>
     <summary>
-<b>* Tidy code
-* Remove duplicated commands (when an svg has too much detail the rounding .toPrecision can produce duplicates) - Optional
-* Complete full set of commands  a - A - Arcs
-* Consider converting Arcs to Polyline or Beziers
-* Consider parsing an svg file
-* Consider option for converting an svg file, which is a flag, into a openstrat Flag
-* Turn openStratJsUtils.js development helper into bookmarklets and/or integrate into deb.scala
-</b>
+<b>* Tidy code</b>
+<b>* Remove duplicated commands (when an svg has too much detail the rounding .toPrecision can produce duplicates) - Optional</b>
+<b>* Complete full set of commands  a - A - Arcs</b>
+<b>* Consider converting Arcs to Polyline or Beziers</b>
+<b>* Consider parsing an svg file</b>
+<b>* Consider option for converting an svg file, which is a flag, into a openstrat Flag</b>
+<b>* Turn openStratJsUtils.js development helper into bookmarklets and/or integrate into deb.scala</b>
     </summary>
 </details>
 
